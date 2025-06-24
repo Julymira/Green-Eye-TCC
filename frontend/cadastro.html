@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastrar Denúncia - Green Eye</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo"><a href="index.html">🌿 Green Eye</a></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Início</a></li>
+      <li><a href="cadastro.html">Cadastrar Denúncia</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section class="intro">
+      <h1>Cadastrar Nova Denúncia</h1>
+      <p>Por favor, clique no mapa para selecionar o local exato da ocorrência e descreva o problema encontrado.</p>
+    </section>
+
+    <!-- Mapa -->
+    <div id="map"></div>
+
+    <!-- Formulário -->
+    <section class="form-section">
+      <h2>Detalhes da Denúncia</h2>
+      <form id="reportForm">
+        <label for="description">Descrição do Problema:</label>
+        <textarea id="description" required placeholder="Ex: Lixo acumulado próximo à escola..."></textarea>
+
+        <input type="hidden" id="lat">
+        <input type="hidden" id="lng">
+
+        <button type="submit">Enviar Denúncia</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Inicializando o mapa
+    const map = L.map('map').setView([-16.2531, -47.9503], 14); // Luziânia - GO
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker;
+
+    // Quando o usuário clicar no mapa
+    map.on('click', function(e) {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+
+      // Atualizar campos ocultos
+      document.getElementById('lat').value = lat;
+      document.getElementById('lng').value = lng;
+
+      // Adicionar marcador no mapa (só 1 por vez)
+      if (marker) {
+        map.removeLayer(marker);
+      }
+      marker = L.marker([lat, lng]).addTo(map)
+        .bindPopup('Local selecionado para denúncia')
+        .openPopup();
+    });
+
+    // Enviar formulário
+    document.getElementById('reportForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const description = document.getElementById('description').value;
+      const lat = document.getElementById('lat').value;
+      const lng = document.getElementById('lng').value;
+
+      if (!lat || !lng) {
+        alert('Por favor, clique no mapa para selecionar o local da denúncia.');
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:3000/api/reports', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description, lat, lng })
+        });
+
+        if (res.ok) {
+          alert('Denúncia enviada com sucesso!');
+          window.location.href = 'index.html';
+        } else {
+          alert('Erro ao enviar denúncia.');
+        }
+      } catch (error) {
+        console.error('Erro ao enviar:', error);
+        alert('Erro ao conectar ao servidor.');
+      }
+    });
+  </script>
+
+</body>
+</html>

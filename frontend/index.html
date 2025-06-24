@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Green Eye - Monitoramento Ambiental</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo"><a href="index.html">🌿 Green Eye</a></div>
+    <ul class="nav-links">
+      <li><a href="cadastro.html">Cadastrar Denúncia</a></li>
+    </ul>
+  </nav>
+
+  <!-- Conteúdo principal -->
+  <main>
+    <section class="intro">
+      <h1>Bem-vindo ao Green Eye 🌱</h1>
+      <p>
+        O <strong>Green Eye</strong> é um sistema de monitoramento ambiental criado para identificar e combater o descarte irregular de lixo em Luziânia-GO.
+        Nossa missão é ajudar a manter a cidade limpa, saudável e sustentável. Por meio de geolocalização e denúncias comunitárias, queremos mapear os pontos críticos e auxiliar o poder público na solução desse problema.
+      </p>
+    </section>
+
+    <!-- Mapa -->
+    <div id="map"></div>
+
+    <!-- Passo a Passo -->
+    <section class="steps">
+      <h2>O que você pode fazer aqui?</h2>
+      <div class="step">
+        <h3>📌 1. Cadastrar uma Denúncia</h3>
+        <p>
+          Identificou um local com lixo descartado de forma irregular?  
+          Clique no mapa para marcar o local, descreva o problema e envie sua denúncia.
+        </p>
+        <a href="#" class="step-button">Cadastrar Denúncia</a>
+      </div>
+      <!-- Futuro: Mais passos como visualizar mapa completo, painel admin, etc -->
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
