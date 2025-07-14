@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Nova Denúncia - Green Eye</title>
+   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+
+    .mapa {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #e8f5e9; /* verde clarinho opcional */
+}
+
+ .container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #e8f5e9; /* verde clarinho opcional */
+}
+
+  /* Estilo do formulário */
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 10px;  
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 350px;
+  }
+    /* Select estilizado */
+    select {
+      width: 300px;
+      padding: 10px;
+      border-radius: 12px;
+      border: 2px solid #2e7d32;
+      background-color: #f9fdfa;
+      font-size: 16px;
+      color: #2e7d32;
+      cursor: pointer;
+    }
+
+    /* Container do upload customizado */
+    .custom-file-upload {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 2px solid #2e7d32;
+      border-radius: 12px;
+      padding: 10px;
+      width: 300px;
+      background-color: #f9fdfa;
+    }
+
+    /* Esconde o input file real */
+    input[type="file"] {
+      display: none;
+    }
+
+    /* Botão customizado */
+    .upload-button {
+      background-color: #2e7d32;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      margin-bottom: 5px;
+    }
+
+    .upload-button:hover {
+      background-color: #1b4d14;
+    }
+
+    /* Texto do nome do arquivo */
+    #file-name {
+      font-size: 14px;
+      color: #2e7d32;
+    }
+
+    /* Botão enviar */
+    button[type="submit"] {
+      width: 300px;
+      background-color: #2e7d32;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #1b4d14;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    textarea {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 15px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+        }
+
+  </style>
+</head>
+<body>
+
+  <!-- Navbar fixa no topo -->
+  <nav class="navbar">
+    <div class="logo"><a href="index.html">🌿 Green Eye</a></div>
+    <ul class="nav-links">
+      <li><a href="denuncia.html">Cadastrar Denúncia</a></li>
+      <li><a href="login.html">Login</a></li>
+    </ul>
+  </nav>
+
+  <div class="map">
+    <h2>Cadastrar Nova Denúncia</h2>
+
+    <!-- Mapa (Localização via SIG) -->
+    <label>Localização no mapa (clique para marcar):</label>
+    <div id="map"></div>
+    <input type="hidden" id="lat">
+    <input type="hidden" id="lng">
+
+  </div>
+
+  <div class="container">
+
+      <form class="form" id="denunciaForm">
+
+      <!-- Tipo de lixo -->
+      <label for="tipoLixo">Tipo de Lixo:</label>
+      <select id="tipoLixo" required>
+        <option value="">Selecione...</option>
+        <option>Lixo doméstico</option>
+        <option>Entulho (obra)</option>
+        <option>Eletrônicos</option>
+        <option>Móveis</option>
+        <option>Animal morto</option>
+        <option>Resíduo perigoso</option>
+      </select>
+
+      <!-- Quantidade -->
+      <label for="quantidade">Quantidade (opcional):</label>
+      <select id="quantidade">
+        <option value="">Selecione...</option>
+        <option>Pequena</option>
+        <option>Média</option>
+        <option>Grande</option>
+      </select>
+
+      <!-- Problemas causados -->
+      <label for="problemas">Problemas causados:</label>
+      <textarea id="problemas" required placeholder="Ex: mau cheiro, presença de insetos, risco de doenças..."></textarea>
+
+      <!-- Descrição adicional -->
+      <label for="descricao">Descrição adicional (opcional):</label>
+      <textarea id="descricao" placeholder="Descreva livremente a situação..."></textarea>
+
+      <!-- Foto -->
+      <div class="custom-file-upload">
+      <label for="foto" class="upload-button">Escolher Foto</label>
+      <input type="file" id="foto" name="foto" />
+      <span id="file-name">Nenhum arquivo escolhido</span>
+      </div>
+
+      <button type="submit">Enviar Denúncia</button>
+    </form>
+
+    </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Inicializa o mapa (Luziânia)
+    const map = L.map('map').setView([-16.2531, -47.9503], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker;
+    map.on('click', function(e) {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+
+      document.getElementById('lat').value = lat;
+      document.getElementById('lng').value = lng;
+
+      if (marker) {
+        map.removeLayer(marker);
+      }
+
+      marker = L.marker([lat, lng]).addTo(map)
+        .bindPopup('Local selecionado')
+        .openPopup();
+    });
+
+    // Enviar formulário (exemplo de uso)
+    document.getElementById('denunciaForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const lat = document.getElementById('lat').value;
+      const lng = document.getElementById('lng').value;
+      if (!lat || !lng) {
+        alert("Por favor, selecione a localização no mapa.");
+        return;
+      }
+
+      alert("Denúncia enviada com sucesso (simulação)!");
+      // Aqui você pode enviar os dados via fetch ou outro método para o backend.
+    });
+  </script>
+
+</body>
+</html>
