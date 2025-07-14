@@ -12,7 +12,8 @@
   <nav class="navbar">
     <div class="logo"><a href="index.html">🌿 Green Eye</a></div>
     <ul class="nav-links">
-      <li><a href="cadastro.html">Cadastrar Denúncia</a></li>
+      <li><a href="denuncia.html">Cadastrar Denúncia</a></li>
+      <li><a href="login.html">Login</a></li>
     </ul>
   </nav>
 
@@ -27,7 +28,16 @@
     </section>
 
     <!-- Mapa -->
-    <div id="map"></div>
+    <div id="map-container" style="position: relative;">
+      <div id="map" style="height: 400px;"></div>
+
+      <div class="map-legend">
+        <strong>Legenda</strong>
+        <div><span class="dot green"></span> Área limpa</div>
+        <div><span class="dot yellow"></span> Nível médio</div>
+        <div><span class="dot red"></span> Nível alto</div>
+      </div>
+    </div>
 
     <!-- Passo a Passo -->
     <section class="steps">
@@ -38,7 +48,7 @@
           Identificou um local com lixo descartado de forma irregular?  
           Clique no mapa para marcar o local, descreva o problema e envie sua denúncia.
         </p>
-        <a href="#" class="step-button">Cadastrar Denúncia</a>
+        <a href="denuncia.html" class="step-button">Cadastrar Denúncia</a>
       </div>
       <!-- Futuro: Mais passos como visualizar mapa completo, painel admin, etc -->
     </section>
