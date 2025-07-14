@@ -107,3 +107,37 @@ main {
   text-decoration: underline;
 }
 
+.map-legend {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: white;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  z-index: 1000;
+}
+
+.map-legend .dot {
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.map-legend .green {
+  background-color: #28a745;
+}
+
+.map-legend .yellow {
+  background-color: #ffc107;
+}
+
+.map-legend .red {
+  background-color: #dc3545;
+}
+
