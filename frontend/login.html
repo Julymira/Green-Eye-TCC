@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      background-color: #f0f2f5;
+      margin: 0;
+    }
+
+    .wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 350px;
+    }
+
+    h2 {
+      color: #2e7d32;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .btn {
+      background-color: #2e7d32;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #27642a;
+    }
+
+    .signup-link {
+      display: block;
+      margin-top: 15px;
+      color: #2e7d32;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .test-accounts {
+      background-color: #f8f9fa;
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .test-accounts i {
+      margin-right: 6px;
+      color: #555;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo"><a href="index.html">🌿 Green Eye</a></div>
+    <ul class="nav-links">
+      <li><a href="denuncia.html">Cadastrar Denúncia</a></li>
+      <li><a href="cadastro.html">Cadastro</a></li>
+    </ul>
+  </nav>
+
+  <!-- Envolva o container com a div wrapper -->
+  <div class="wrapper">
+    <div class="container">
+      <h2>Login</h2>
+      <form>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required />
+
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha" required />
+
+        <button type="submit" class="btn">Entrar</button>
+      </form>
+
+      <a href="cadastro.html" class="signup-link">Não tem conta? Cadastre-se</a>
+
+      <div class="test-accounts">
+        <p><strong>Contas para teste:</strong></p>
+        <p><i class="fas fa-user"></i> Usuário: usuario@teste.com / 123456</p>
+        <p><i class="fas fa-user-cog"></i> Admin: admin@teste.com / 123456</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
