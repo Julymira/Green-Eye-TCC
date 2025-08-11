@@ -21,7 +21,7 @@
 1. **Clone o Repositório**
 
 ```bash
-
+https://github.com/Julymira/Green-Eye-TCC.git
 ```
 
 2. **Instale as Dependências**
