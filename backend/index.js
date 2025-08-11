@@ -11,6 +11,19 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 app.use(cors());
 app.use(express.json());
 
+
+// Testa a conexão imediatamente ao iniciar
+(async () => {
+  try {
+    await pool.query('SELECT 1');
+    console.log('✅ Conexão com o banco de dados estabelecida com sucesso!');
+  } catch (err) {
+    console.error('❌ Erro ao conectar ao banco de dados:', err.message);
+    process.exit(1);
+  }
+})();
+
+
 // GET: Listar todas as denúncias
 
 app.get('/', (req, res) => {
