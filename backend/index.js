@@ -28,7 +28,6 @@ app.use('/api', adminUsersRouter);
 
 
 // GET: Listar todas as denúncias
-
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
@@ -62,6 +61,13 @@ app.post('/api/reports', async (req, res) => {
     res.status(500).json({ error: 'Erro ao salvar denúncia' });
   }
 });
+
+
+// GET: Redirecinar para dashboard admin
+app.get("/admin_dashboard.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/admin_dashboard.html"));
+});
+
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
