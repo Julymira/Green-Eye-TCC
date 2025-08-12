@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Administração</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .navbar {
+            background-color: #3d65ac;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .navbar ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+
+        .navbar li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar li a:hover {
+            background-color: #5a82c4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <h1>Dashboard de Administração</h1>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="logout()">Sair</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="content">
+        <div class="card">
+            <h2>Visão Geral</h2>
+            <p>Bem-vindo ao painel de administração. Aqui você pode gerenciar as denúncias.</p>
+        </div>
+
+        <div class="card">
+            <h2>Denúncias Recentes</h2>
+            <p>Conteúdo para exibir as denúncias...</p>
+        </div>
+    </main>
+
+    <script>
+        // Função para simular o logout
+        function logout() {
+            // Em uma aplicação real, você faria uma requisição ao backend
+            // para invalidar a sessão ou remover o token de autenticação.
+            // Por enquanto, vamos apenas redirecionar para a página inicial
+            // (ou a página de login).
+            alert('Você foi desconectado.');
+            window.location.href = '/'; // Redireciona para a página inicial (index.html)
+        }
+    </script>
+
+</body>
+</html>
