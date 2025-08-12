@@ -174,9 +174,15 @@
           localStorage.setItem('admin', JSON.stringify(data.user));
           
           setTimeout(() => {
+
+
+            // Verificar se precisa alterar senha
+        if (data.user.needsPasswordChange) {
+          window.location.href = 'admin_change_password.html';
+        } else {
             // Redirecionar para painel administrativo (a ser criado)
-            window.location.href = 'admin_dashboard.html';
-          }, 1500);
+          window.location.href = 'admin_dashboard.html';
+        }}, 1500);
         } else {
           showMessage(data.error || 'Erro ao fazer login de administrador', 'error');
         }
