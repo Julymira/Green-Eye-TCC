@@ -141,3 +141,14 @@ main {
   background-color: #dc3545;
 }
 
+/* Estilos para botão administrativo */
+.admin-button {
+  background-color: #ff9800 !important;
+  border: 2px solid #f57c00 !important;
+}
+
+.admin-button:hover {
+  background-color: #f57c00 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(245, 124, 0, 0.3);
+}
