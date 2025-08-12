@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login</title>
+  <title>Login Administrador - Green Eye</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
@@ -96,32 +96,106 @@
     <div class="logo"><a href="index.html">🌿 Green Eye</a></div>
     <ul class="nav-links">
       <li><a href="denuncia.html">Cadastrar Denúncia</a></li>
-      <li><a href="cadastro.html">Cadastro</a></li>
+      <li><a href="index.html">Início</a></li>
     </ul>
   </nav>
 
-  <!-- Envolva o container com a div wrapper -->
+  <!-- Formulário Login Adm-->
   <div class="wrapper">
     <div class="container">
-      <h2>Login</h2>
-      <form>
-        <label for="email">Email</label>
+      <div class="admin-badge">
+        <i class="fas fa-shield-alt"></i> ÁREA ADMINISTRATIVA
+      </div>
+      
+      <h2>Login Administrador</h2>
+      
+      <div id="message" class="message"></div>
+      
+      <form id="adminLoginForm">
+        <label for="email">Email do Administrador</label>
         <input type="email" id="email" name="email" required />
 
         <label for="senha">Senha</label>
         <input type="password" id="senha" name="senha" required />
 
-        <button type="submit" class="btn">Entrar</button>
+        <button type="submit" class="btn" id="loginBtn">
+          <i class="fas fa-sign-in-alt"></i> Entrar como Administrador
+        </button>
       </form>
 
-      <a href="cadastro.html" class="signup-link">Não tem conta? Cadastre-se</a>
+      <a href="index.html" class="back-link">
+        <i class="fas fa-arrow-left"></i> Voltar ao início
+      </a>
 
-      <div class="test-accounts">
-        <p><strong>Contas para teste:</strong></p>
-        <p><i class="fas fa-user"></i> Usuário: usuario@teste.com / 123456</p>
-        <p><i class="fas fa-user-cog"></i> Admin: admin@teste.com / 123456</p>
+      <div class="admin-info">
+        <p><strong><i class="fas fa-info-circle"></i> Informações importantes:</strong></p>
+        <p><i class="fas fa-key"></i> Acesso restrito a administradores autorizados</p>
+        <p><i class="fas fa-shield-alt"></i> Use suas credenciais fornecidas pelo sistema</p>
+        <p><i class="fas fa-clock"></i> Senhas temporárias devem ser alteradas no primeiro acesso</p>
       </div>
     </div>
   </div>
+
+  <script>
+    document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+      const messageDiv = document.getElementById('message');
+      const loginBtn = document.getElementById('loginBtn');
+      
+      // Limpar mensagens anteriores
+      messageDiv.style.display = 'none';
+      messageDiv.className = 'message';
+      
+      // Desabilitar botão durante o envio
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
+      
+      try {
+        const response = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            password: senha
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          showMessage('Login de administrador realizado com sucesso! Redirecionando...', 'success');
+          
+          // Salvar dados do administrador no localStorage
+          localStorage.setItem('admin', JSON.stringify(data.user));
+          
+          setTimeout(() => {
+            // Redirecionar para painel administrativo (a ser criado)
+            window.location.href = 'admin_dashboard.html';
+          }, 1500);
+        } else {
+          showMessage(data.error || 'Erro ao fazer login de administrador', 'error');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        showMessage('Erro de conexão. Tente novamente.', 'error');
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar como Administrador';
+      }
+    });
+    
+    function showMessage(text, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = text;
+      messageDiv.className = `message ${type}`;
+      messageDiv.style.display = 'block';
+    }
+  </script>
+
 </body>
 </html>
