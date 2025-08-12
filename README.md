@@ -1,4 +1,4 @@
-# 🚗 FlexiLease Autos - API de Locação de Veículos
+# 🌿 Green Eye - API de Denúncias de Descarte Indevido de Lixo
 
 ## 🛠️ Tecnologias Utilizadas
 
