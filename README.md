@@ -56,12 +56,9 @@ Para rodar este projeto localmente, siga os passos abaixo:
 
 ### 3. Variáveis de Ambiente
 
-1.  **Crie o arquivo `.env`:**
-    * Dentro da pasta `backend`, você encontrará um arquivo chamado `.env.example`.
-    * Faça uma **cópia** dele e renomeie a cópia para `.env`.
-
-2.  **Preencha o `.env`:**
-    * Abra o novo arquivo `.env` e preencha suas credenciais do PostgreSQL (principalmente a `DB_PASSWORD` que você usa no seu computador).
+1.  **Atualize a senha do arquivo `.env`:**
+    * Dentro da pasta `backend`, você encontrará um arquivo chamado `.env`.
+    * Abra o arquivo `.env` e preencha suas credenciais do PostgreSQL (principalmente a `DB_PASSWORD` que você usa no seu computador).
 
     ```
     # Credenciais do Banco de Dados PostgreSQL
@@ -79,7 +76,7 @@ Para rodar este projeto localmente, siga os passos abaixo:
     ```bash
     node index.js
     ```
-    
+
     **Para Desenvolvimento (Recomendado):**
     Este comando usa o `nodemon` para reiniciar automaticamente o servidor sempre que você salvar uma alteração no código.
 
