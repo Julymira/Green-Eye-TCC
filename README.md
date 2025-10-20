@@ -1,49 +1,99 @@
-# 🌿 Green Eye - API de Denúncias de Descarte Indevido de Lixo
+# 🌿 Green Eye - TCC
+
+O Green Eye é um sistema de monitoramento ambiental (WebSIG) criado para identificar e combater o descarte irregular de lixo em Luziânia-GO, como parte do Trabalho de Conclusão de Curso em Sistemas de Informação.
 
 ## 🛠️ Tecnologias Utilizadas
+* **Backend:** Node.js, Express.js
+* **Banco de Dados:** PostgreSQL com a extensão PostGIS
+* **Frontend:** HTML5, CSS3, JavaScript
+* **Mapas:** Leaflet.js
 
-<div>
-<img align="center" alt="Jv-csharp" height="40" width="50" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original-wordmark.svg" />
-<img align="center" alt="Jv-csharp" height="40" width="50" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/express/express-original-wordmark.svg" />
-<img align="center" alt="Jv-csharp" height="40" width="50" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vscode/vscode-original-wordmark.svg" />
-</div>
+## 🚀 Como Rodar o Projeto
 
-## 🚀 Como Executar o Projeto
+Para rodar este projeto localmente, siga os passos abaixo:
 
 ### Pré-Requisitos
+* [Node.js](https://nodejs.org/)
+* [Git](https://git-scm.com/)
+* [PostgreSQL](https://www.postgresql.org/download/) com a extensão [PostGIS](https://postgis.net/install/)
+* (Opcional) [pgAdmin](https://www.pgadmin.org/) ou DBeaver para gerenciar o banco
 
-- Node.js
-- Git
-- Editor de Código (Recomenda-se o VsCode)
+---
 
-### Passos para Execução
+### 1. Instalação do Backend e Frontend
 
-1. **Clone o Repositório**
+1.  **Clone o repositório:**
+    ```bash
+    git clone [https://github.com/Julymira/Green-Eye-TCC.git](https://github.com/Julymira/Green-Eye-TCC.git)
+    ```
 
-```bash
-https://github.com/Julymira/Green-Eye-TCC.git
-```
+2.  **Entre na pasta do backend:**
+    (O `package.json` está dentro da pasta `backend`, então todos os comandos npm devem ser rodados lá)
+    ```bash
+    cd Green-Eye-TCC/backend
+    ```
 
-2. **Instale as Dependências**
+3.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
 
-```bash
-npm install
-```
+### 2. Configuração do Banco de Dados
 
-3. **Execute a Aplicação**
+1.  **Crie o Banco de Dados:**
+    * Abra o pgAdmin (ou `psql`) e crie um **novo banco de dados** chamado `greeneye`.
 
-```bash
-npm start
-```
+2.  **Ative o PostGIS:**
+    * Abra uma "Query Tool" (Ferramenta de Consulta) para o banco `greeneye` e rode o comando:
+    ```sql
+    CREATE EXTENSION postgis;
+    ```
 
-4. **Acesse a API**
+3.  **Crie as Tabelas:**
+    * Ainda na Query Tool, abra o arquivo `backend/database/init.sql` (que está neste repositório).
+    * Copie **todo** o conteúdo do arquivo `init.sql` e cole na Query Tool.
+    * Execute o script. Isso irá criar as tabelas `users` e `reports` com todas as colunas corretas.
 
-    A aplicação estará disponível no endereço: `http://localhost:3000`.
+### 3. Variáveis de Ambiente
 
+1.  **Crie o arquivo `.env`:**
+    * Dentro da pasta `backend`, você encontrará um arquivo chamado `.env.example`.
+    * Faça uma **cópia** dele e renomeie a cópia para `.env`.
 
+2.  **Preencha o `.env`:**
+    * Abra o novo arquivo `.env` e preencha suas credenciais do PostgreSQL (principalmente a `DB_PASSWORD` que você usa no seu computador).
 
-🔜🔜🔜🔜🔜🔜🔜🔜🔜
+    ```
+    # Credenciais do Banco de Dados PostgreSQL
+    DB_USER=postgres
+    DB_PASSWORD=sua_senha_aqui
+    DB_HOST=localhost
+    DB_PORT=5432
+    DB_DATABASE=greeneye
+    ```
+
+### 4. Execute a Aplicação
+
+1.  **Inicie o servidor:**
+    (Ainda dentro da pasta `backend`)
+    ```bash
+    node index.js
+    ```
+    
+    **Para Desenvolvimento (Recomendado):**
+    Este comando usa o `nodemon` para reiniciar automaticamente o servidor sempre que você salvar uma alteração no código.
+
+    ```bash
+    npm run dev
+    ```
+
+2.  **Acesse a Aplicação:**
+    * O servidor estará rodando e servindo o frontend. Abra seu navegador e acesse:
+    
+    **[http://localhost:3000](http://localhost:3000)**
+
+---
 
 ## 💻 Desenvolvedora
 
-- [Julyana Mira](https://github.com/Julymira)
+* [Julyana Mira](https://github.com/Julymira)
