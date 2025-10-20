@@ -190,6 +190,7 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
+    // 1. LÓGICA DO MAPA
     // Inicializa o mapa (Luziânia)
     const map = L.map('map').setView([-16.2531, -47.9503], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -201,6 +202,7 @@
       const lat = e.latlng.lat;
       const lng = e.latlng.lng;
 
+      // Salva as coordenadas nos inputs escondidos
       document.getElementById('lat').value = lat;
       document.getElementById('lng').value = lng;
 
@@ -213,19 +215,83 @@
         .openPopup();
     });
 
-    // Enviar formulário (exemplo de uso)
-    document.getElementById('denunciaForm').addEventListener('submit', function(e) {
-      e.preventDefault();
+    // 2. LÓGICA DO UPLOAD DE ARQUIVO (Bônus para UI)
+    // Mostra o nome do arquivo selecionado
+    document.getElementById('foto').addEventListener('change', function() {
+        const fileName = this.files[0] ? this.files[0].name : 'Nenhum arquivo escolhido';
+        document.getElementById('file-name').textContent = fileName;
+    });
 
+
+    // 3. LÓGICA DE ENVIO DO FORMULÁRIO (A MUDANÇA PRINCIPAL)
+    // Substituímos a "simulação" pela função 'fetch' real
+    
+    document.getElementById('denunciaForm').addEventListener('submit', async function(e) {
+      e.preventDefault(); // Impede o recarregamento da página
+
+      // --- 1. Coletar todos os dados do formulário ---
       const lat = document.getElementById('lat').value;
       const lng = document.getElementById('lng').value;
+      
+      // Validação do mapa (mantida)
       if (!lat || !lng) {
         alert("Por favor, selecione a localização no mapa.");
         return;
       }
+      
+      const tipo_lixo = document.getElementById('tipoLixo').value;
+      const quantidade = document.getElementById('quantidade').value;
+      const problemas_causados = document.getElementById('problemas').value;
+      const descricao_adicional = document.getElementById('descricao').value;
+      // const fotoFile = document.getElementById('foto').files[0]; // (Não vamos enviar o arquivo ainda, conforme TCC I)
 
-      alert("Denúncia enviada com sucesso (simulação)!");
-      // Aqui você pode enviar os dados via fetch ou outro método para o backend.
+      // --- 2. Montar o objeto JSON para enviar ---
+      // (Os nomes aqui devem ser IDÊNTICOS aos do backend em `req.body`)
+      const dadosDenuncia = {
+          tipo_lixo: tipo_lixo,
+          quantidade: quantidade,
+          problemas_causados: problemas_causados,
+          descricao_adicional: descricao_adicional,
+          lat: parseFloat(lat), // Enviar como número
+          lng: parseFloat(lng)  // Enviar como número
+      };
+
+      // --- 3. Enviar os dados para o Backend (API) ---
+      try {
+        // Esta é a rota 'POST' que você criou no 'denuncias.js'
+        const response = await fetch('/api/reports', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dadosDenuncia)
+        });
+
+        if (response.ok) {
+            // Sucesso! (Status 201)
+            const novaDenuncia = await response.json();
+            alert('Denúncia enviada com sucesso! (ID: ' + novaDenuncia.id + ')');
+            
+            // Limpa o formulário e o mapa
+            document.getElementById('denunciaForm').reset();
+            document.getElementById('file-name').textContent = 'Nenhum arquivo escolhido';
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            // Opcional: redireciona para a home
+            // window.location.href = 'index.html';
+
+        } else {
+            // Erro vindo do backend (ex: validação falhou, status 400)
+            const erro = await response.json();
+            alert('Erro ao enviar denúncia: ' + (erro.error || response.statusText));
+        }
+
+      } catch (err) {
+          // Erro de rede (ex: backend desligado)
+          console.error('Erro de conexão:', err);
+          alert('Erro de conexão. Não foi possível conectar ao servidor.');
+      }
     });
   </script>
 
