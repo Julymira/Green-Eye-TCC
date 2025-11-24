@@ -56,9 +56,9 @@ Para rodar este projeto localmente, siga os passos abaixo:
 
 ### 3. Variáveis de Ambiente
 
-1.  **Atualize a senha do arquivo `.env`:**
-    * Dentro da pasta `backend`, você encontrará um arquivo chamado `.env`.
-    * Abra o arquivo `.env` e preencha suas credenciais do PostgreSQL (principalmente a `DB_PASSWORD` que você usa no seu computador).
+1.  **Atualize a senha do arquivo `.env.env.example`:**
+    * Dentro da pasta `backend`, você encontrará um arquivo chamado `.env.example`.
+    * Abra o arquivo `.env.example` e preencha suas credenciais do PostgreSQL (principalmente a `DB_PASSWORD` que você usa no seu computador).
 
     ```
     # Credenciais do Banco de Dados PostgreSQL
@@ -66,7 +66,10 @@ Para rodar este projeto localmente, siga os passos abaixo:
     DB_PASSWORD=sua_senha_aqui
     DB_HOST=localhost
     DB_PORT=5432
-    DB_DATABASE=greeneye
+    DB_NAME=greeneye
+
+    PORT=3000
+    NODE_ENV=development
     ```
 
 ### 4. Execute a Aplicação
