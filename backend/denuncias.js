@@ -60,20 +60,31 @@ router.post('/', async (req, res) => {
 });
 
 /*
- * 2. ROTA DE LEITURA (GET) - ATUALIZADA
- * (Envia todas as denúncias para o mapa principal)
+ * 2. ROTA DE LEITURA (GET) - COM FILTROS
+ * (Envia denúncias filtradas para o mapa e dashboard)
  */
 router.get('/', async (req, res) => {
     try {
-        // Agora podemos selecionar as novas colunas para o mapa
-        const todasDenunciasQuery = `
-            SELECT id, lat, lng, tipo_lixo, status 
-            FROM reports 
-            WHERE status != 'Resolvida'; -- Exemplo: não mostrar denúncias resolvidas
+        const { status } = req.query; // Pega filtro da URL (?status=Nova,Resolvida)
+        
+        let query = `
+            SELECT id, lat, lng, tipo_lixo, quantidade, status, created_at, descricao_adicional
+            FROM reports
         `;
         
-        const todasDenuncias = await pool.query(todasDenunciasQuery);
-        res.json(todasDenuncias.rows);
+        let params = [];
+        
+        // Se tiver filtro de status, aplicar
+        if (status) {
+            const statusArray = status.split(',');
+            query += ' WHERE status = ANY($1)';
+            params.push(statusArray);
+        }
+        
+        query += ' ORDER BY created_at DESC';
+        
+        const result = await pool.query(query, params);
+        res.json(result.rows);
 
     } catch (err) {
         console.error(err.message);
@@ -81,8 +92,46 @@ router.get('/', async (req, res) => {
     }
 });
 
+/*
+ * 3. ROTA DE ATUALIZAÇÃO (PUT)
+ * (Permite o gestor alterar o status da denúncia)
+ */
+router.put('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        
+        // Validar status
+        const statusValidos = ['Nova', 'Em verificação', 'Resolvida'];
+        if (!statusValidos.includes(status)) {
+            return res.status(400).json({ 
+                error: 'Status inválido. Use: Nova, Em verificação ou Resolvida' 
+            });
+        }
 
-// (As outras rotas, como PUT e DELETE, vêm depois)
+        // Atualizar no banco
+        const query = `
+            UPDATE reports 
+            SET status = $1 
+            WHERE id = $2 
+            RETURNING *
+        `;
+        
+        const result = await pool.query(query, [status, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Denúncia não encontrada' });
+        }
+        
+        res.json(result.rows[0]);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Erro no servidor ao atualizar denúncia.');
+    }
+});
+
+// (As outras rotas, como DELETE, vêm depois)
 // ...
 
 module.exports = router;
