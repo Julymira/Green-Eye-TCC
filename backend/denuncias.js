@@ -65,33 +65,47 @@ router.post('/', async (req, res) => {
  */
 router.get('/', async (req, res) => {
     try {
-        const { status } = req.query; // Pega filtro da URL (?status=Nova,Resolvida)
+        const { status } = req.query;
         
+        // 1. Começamos a query básica
         let query = `
-            SELECT id, lat, lng, tipo_lixo, quantidade, status, created_at, descricao_adicional
-            FROM reports
+            SELECT id, lat, lng, tipo_lixo, quantidade, status, created_at, descricao_adicional, photo_url
+            FROM reports 
         `;
         
-        let params = [];
+        // 2. Definimos nossa condição obrigatória (esconder resolvidos velhos)
+        let condicoes = [
+            "(status != 'Resolvida' OR (status = 'Resolvida' AND updated_at > NOW() - INTERVAL '24 HOURS'))"
+        ];
         
-        // Se tiver filtro de status, aplicar
+        let params = [];
+
+        // 3. Se tiver filtro de status vindo da URL, adicionamos na lista de condições
         if (status) {
             const statusArray = status.split(',');
-            query += ' WHERE status = ANY($1)';
+            // Adiciona a condição do array ($1, $2, etc)
+            condicoes.push(`status = ANY($${params.length + 1})`);
             params.push(statusArray);
         }
+
+        // 4. Monta o WHERE dinamicamente
+        // Se houver condições, junta elas com " AND "
+        if (condicoes.length > 0) {
+            query += " WHERE " + condicoes.join(" AND ");
+        }
         
-        query += ' ORDER BY created_at DESC';
+        // 5. Ordenação
+        query += " ORDER BY created_at DESC";
         
         const result = await pool.query(query, params);
         res.json(result.rows);
 
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Erro no servidor ao buscar denúncias.');
+        console.error('Erro na rota GET /reports:', err.message);
+        // Retorna o erro exato para facilitar sua leitura no terminal
+        res.status(500).json({ error: err.message });
     }
 });
-
 /*
  * 3. ROTA DE ATUALIZAÇÃO (PUT)
  * (Permite o gestor alterar o status da denúncia)

@@ -129,18 +129,6 @@ main {
   vertical-align: middle;
 }
 
-.map-legend .green {
-  background-color: #28a745;
-}
-
-.map-legend .yellow {
-  background-color: #ffc107;
-}
-
-.map-legend .red {
-  background-color: #dc3545;
-}
-
 /* Estilos para botão administrativo */
 .admin-button {
   background-color: #ff9800 !important;
@@ -152,3 +140,19 @@ main {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(245, 124, 0, 0.3);
 }
+
+/* No style.css, junto com as outras cores .dot */
+
+.dot {
+  height: 12px;
+  width: 12px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.dot.green { background-color: #2aad27; }
+.dot.yellow { background-color: #ffd326; } 
+.dot.orange { background-color: #cb8427; } /* NOVA COR LARANJA */
+.dot.red { background-color: #cb2b3e; }
