@@ -1,93 +1,76 @@
--- 1. CONFIGURAÇÃO INICIAL
--- Garante que a extensão PostGIS (para mapas) esteja ativada
-CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+-- =====================================================
+-- ARQUIVO DE INICIALIZAÇÃO DO BANCO DE DADOS (Green Eye)
+-- =====================================================
 
--- 2. CRIAÇÃO DE SEQUÊNCIAS (IDs Automáticos)
--- Sequência para a tabela 'users'
-CREATE SEQUENCE IF NOT EXISTS public.users_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+-- 1. EXTENSÕES
+-- Ativa o PostGIS para lidar com dados geográficos (lat/lng/mapas)
+CREATE EXTENSION IF NOT EXISTS postgis;
 
--- Sequência para a tabela (Reports)
-CREATE SEQUENCE IF NOT EXISTS public.reports_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
--- 3. CRIAÇÃO DAS TABELAS
--- Tabela de Usuários (Apenas Gestores)
+-- 2. TABELA DE USUÁRIOS (Gestores)
 CREATE TABLE IF NOT EXISTS public.users (
-    id integer NOT NULL PRIMARY KEY DEFAULT nextval('public.users_id_seq'::regclass),
-    email character varying(255) NOT NULL UNIQUE,
-    password character varying(255) NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    is_temp_password boolean DEFAULT false
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    is_temp_password BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabela de Denúncias (Reports)
+-- 3. TABELA DE DENÚNCIAS (Reports)
+-- Já inclui todas as colunas novas: problemas_causados, photo_url, updated_at
 CREATE TABLE IF NOT EXISTS public.reports (
-    id integer NOT NULL PRIMARY KEY DEFAULT nextval('public.reports_id_seq'::regclass),
+    id SERIAL PRIMARY KEY,
     
-    -- Dados descritivos
-    descricao_adicional text NOT NULL,
-    photo_url character varying(255),
-    tipo_lixo character varying(100),
-    quantidade character varying(100),
-    problemas_causados text,
-    status character varying(50) DEFAULT 'Nova'::character varying,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    -- Dados Básicos
+    tipo_lixo VARCHAR(100),
+    quantidade VARCHAR(100),
+    problemas_causados TEXT,
+    descricao_adicional TEXT NOT NULL,
+    photo_url VARCHAR(255),
+    
+    -- Controle de Status
+    status VARCHAR(50) DEFAULT 'Nova',
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
-    -- Dados de Localização Simples (Para seu React/Node atual)
-    lat double precision NOT NULL,
-    lng double precision NOT NULL,
+    -- Localização (Coordenadas numéricas simples)
+    lat DOUBLE PRECISION NOT NULL,
+    lng DOUBLE PRECISION NOT NULL,
 
-    -- Dados de Localização PostGIS (Para o TCC e Performance)
-    -- SRID 4326 = Padrão GPS (WGS 84)
+    -- Localização (Geometria PostGIS para mapas avançados)
     localizacao geometry(Point, 4326)
 );
 
--- Vincula as sequências às tabelas (Boa prática)
-ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
-ALTER SEQUENCE public.reports_id_seq OWNED BY public.reports.id;
-
--- 4. LÓGICA GEOGRÁFICA (PostGIS Automático)
--- A. Cria o Índice Espacial (Torna o mapa rápido)
+-- 4. ÍNDICES E OTIMIZAÇÃO
+-- Cria um índice espacial para deixar as buscas no mapa rápidas
 CREATE INDEX IF NOT EXISTS idx_reports_localizacao 
 ON public.reports USING GIST (localizacao);
 
--- B. Função para sincronizar lat/lng com a coluna geométrica
+-- 5. AUTOMAÇÃO (TRIGGER)
+-- Função que mantém a coluna geométrica (localizacao) sempre sincronizada com lat/lng
 CREATE OR REPLACE FUNCTION public.sync_localizacao_geom()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Pega a longitude (NEW.lng) e latitude (NEW.lat) e cria o ponto geométrico
-    -- Se lat ou lng mudarem, a coluna localizacao atualiza sozinha
     NEW.localizacao := ST_SetSRID(ST_MakePoint(NEW.lng, NEW.lat), 4326);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- C. Gatilho (Trigger) que dispara a função acima
+-- Gatilho que dispara a função acima sempre que alguém insere ou atualiza uma denúncia
 DROP TRIGGER IF EXISTS trg_sync_localizacao ON public.reports;
-
 CREATE TRIGGER trg_sync_localizacao
 BEFORE INSERT OR UPDATE OF lat, lng ON public.reports
 FOR EACH ROW
 EXECUTE FUNCTION public.sync_localizacao_geom();
 
--- 5. DADOS INICIAIS (Seed)
--- Cria o usuário admin padrão
+-- 6. DADOS INICIAIS (SEED)
+-- Usuário Admin Padrão (Senha: admin123)
+-- O hash abaixo corresponde a 'admin123' gerado via bcrypt
 INSERT INTO public.users (email, password, is_temp_password) 
 VALUES ('admin@greeneye.com', '$2b$10$CznwWKZSW/9SForJJMAu4e8GihPjFEWDG3vCTOQXTrqSWXVXMMBu', false)
 ON CONFLICT (email) DO NOTHING;
 
--- (Opcional) Insere uma denúncia de teste para validar o Trigger
-INSERT INTO public.reports (descricao_adicional, lat, lng, tipo_lixo, quantidade)
-VALUES ('Teste de inicialização', -16.2512, -47.9503, 'Entulho', 'Média')
+-- Denúncia de Teste (Para ver algo no mapa logo de cara)
+INSERT INTO public.reports (descricao_adicional, lat, lng, tipo_lixo, quantidade, problemas_causados, status)
+VALUES 
+('Lixo acumulado na esquina, teste inicial.', -16.2512, -47.9503, 'Entulho', 'Média', 'Mau cheiro', 'Nova')
 ON CONFLICT DO NOTHING;
