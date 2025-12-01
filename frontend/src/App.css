@@ -1,0 +1,407 @@
+/* src/App.css - VERSÃO FINAL CORRIGIDA */
+
+/* 1. FUNDO GERAL */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f1f8e9; /* Verde bem clarinho */
+  color: #333;
+}
+
+/* 2. NAVBAR */
+.navbar {
+  background-color: #2e7d32; /* Verde TCC */
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.brand {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-links a {
+  margin-left: 20px;
+  font-size: 14px;
+}
+
+/* 3. SEÇÃO BEM-VINDO (CENTRALIZADA) */
+.welcome-section {
+  padding: 40px 20px;
+  background-color: #f1f8e9;
+  text-align: center; /* Centraliza tudo */
+}
+
+.welcome-section h2 {
+  color: #2e7d32;
+  margin-bottom: 15px;
+  font-size: 28px;
+}
+
+.welcome-section p {
+  color: #555;
+  font-size: 16px;
+  max-width: 900px;
+  margin: 0 auto; /* Centraliza o bloco de texto */
+  line-height: 1.6;
+}
+
+/* 4. MAPA E LEGENDA */
+.map-wrapper {
+  position: relative; /* Importante para a legenda ficar dentro */
+  border-top: 2px solid #c5e1a5;
+  border-bottom: 2px solid #c5e1a5;
+}
+
+.map-legend {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  z-index: 1000; /* Garante que fica EM CIMA do mapa */
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.dot {
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.dot.green { background-color: #2aad27; }
+.dot.yellow { background-color: #ffd326; }
+.dot.orange { background-color: #cb8427; }
+.dot.red { background-color: #cb2b3e; }
+
+/* 5. SEÇÃO DOS CARDS (CAIXINHAS BRANCAS) */
+.steps-section {
+  padding: 40px 20px;
+  background-color: #f1f8e9;
+  text-align: center;
+}
+
+.steps-section h2 {
+  color: #2e7d32;
+  font-size: 22px;
+  margin-bottom: 30px;
+  display: inline-block;
+  border-bottom: 2px solid #c5e1a5;
+  padding-bottom: 5px;
+}
+
+/* CONTAINER DOS CARDS */
+.cards-container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+/* O CARD EM SI */
+.card-action {
+  background: white;
+  border-radius: 12px;
+  padding: 30px 20px;
+  width: 300px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-action:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 20px rgba(46, 125, 50, 0.15);
+  border-color: #a5d6a7;
+}
+
+.card-action h3 {
+  color: #2e7d32;
+  font-size: 18px;
+  margin-top: 0;
+}
+
+.card-action p {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* BOTÕES DENTRO DOS CARDS */
+.btn-card {
+  display: block;
+  padding: 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 15px;
+  transition: filter 0.2s;
+  color: white; /* Garante texto branco */
+}
+
+.btn-card:hover {
+  filter: brightness(90%);
+}
+
+.bg-green { background-color: #43a047; }
+.bg-orange { background-color: #fb8c00; }
+
+/* 6. ESTILOS DO FORMULÁRIO (NovaDenuncia e Login) */
+.form-container {
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.form-card {
+  background: white;
+  width: 100%;
+  max-width: 600px; /* Largura máxima para não ficar gigante */
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 1px solid #e0e0e0;
+}
+
+.form-card h2 {
+  color: #2e7d32;
+  text-align: center;
+  margin-top: 0;
+  border-bottom: 2px solid #c5e1a5;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box; /* Garante que o padding não estoure a largura */
+  font-family: inherit;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: #2e7d32;
+  outline: none;
+  box-shadow: 0 0 5px rgba(46, 125, 50, 0.2);
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 15px;
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 10px;
+}
+
+.btn-submit:hover {
+  background-color: #1b5e20;
+}
+
+.btn-location {
+  background-color: #0288d1;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-location:hover {
+  background-color: #01579b;
+}
+
+.location-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+/* 7. ESTILOS DO MAPA DE SELEÇÃO E UPLOAD */
+
+/* Mapa dentro do formulário */
+.form-map-container {
+  height: 300px; /* Altura do mapinha de seleção */
+  width: 100%;
+  border: 2px solid #c5e1a5;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.map-instruction {
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  margin-bottom: 5px;
+  font-style: italic;
+}
+
+/* Upload Customizado (Igual ao seu antigo) */
+.custom-file-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px dashed #2e7d32;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #f9fdfa;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.custom-file-upload:hover {
+  background-color: #e8f5e9;
+}
+
+.upload-label {
+  background-color: #2e7d32;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 5px;
+}
+
+#file-name {
+  font-size: 13px;
+  color: #2e7d32;
+}
+
+input[type="file"] {
+  display: none; /* Esconde o input feio padrão */
+}
+
+/* 8. LAYOUT DO DASHBOARD (Mapa + Tabela) */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Duas colunas iguais */
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* O cartão do mapa no dashboard */
+.dashboard-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  height: fit-content; /* Se ajusta ao conteúdo */
+}
+
+/* Responsividade: Em telas pequenas, vira 1 coluna */
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 8. LAYOUT DA PÁGINA DE DENÚNCIA (LADO A LADO E MESMA ALTURA) */
+
+.denuncia-container {
+  /* Topo: 10px | Laterais: 20px | Fundo: 40px */
+  padding: 10px 20px 40px 20px; 
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.denuncia-grid {
+  display: grid;
+  /* MUDANÇA DE PROPORÇÃO: */
+  /* 1.5fr para o mapa (mais largo) e 1fr para o formulário (mais estreito) */
+  grid-template-columns: 1.5fr 1fr; 
+  gap: 30px;
+  align-items: stretch; 
+}
+
+.denuncia-card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 1px solid #e0e0e0;
+}
+
+/* --- AJUSTE DA COLUNA DO MAPA --- */
+.map-column {
+  /* Transforma este card em um container Flex vertical */
+  display: flex;
+  flex-direction: column;
+  /* Força ele a ocupar 100% da altura que o Grid der pra ele (baseado no form) */
+  height: 100%; 
+  /* box-sizing é importante para padding não estourar */
+  box-sizing: border-box; 
+}
+
+.form-map-large {
+  /* A MÁGICA: Ocupa todo o espaço vertical que sobrar */
+  flex: 1; 
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #c5e1a5;
+  position: relative;
+  /* Altura mínima para garantir que o mapa apareça mesmo se o form for pequeno */
+  min-height: 400px; 
+}
+
+/* RESPONSIVIDADE (CELULAR) */
+@media (max-width: 900px) {
+  .denuncia-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .map-column {
+    height: auto; /* No celular, a altura é automática */
+  }
+  .form-map-large {
+    height: 400px; /* Altura fixa no celular */
+    flex: none;
+  }
+}
