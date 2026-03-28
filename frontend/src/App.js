@@ -8,6 +8,8 @@ import Home from './Home';
 import NovaDenuncia from './NovaDenuncia';
 import Login from './Login';
 import Dashboard from './Dashboard';
+import RegisterCompany from './RegisterCompany';
+import LoginCompany from './LoginCompany';
 
 // --- NOVO: Layout para as páginas públicas (Com a Navbar padrão) ---
 function LayoutPublico() {
@@ -19,7 +21,8 @@ function LayoutPublico() {
         </div>
         <div className="nav-links">
           <Link to="/denunciar">+ Denunciar</Link>
-          <Link to="/login">Login</Link>
+          <Link to="/login-empresa">Empresas</Link> 
+          <Link to="/login">Gestores</Link>
         </div>
       </nav>
       
@@ -40,6 +43,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/denunciar" element={<NovaDenuncia />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/cadastro-empresa" element={<RegisterCompany />} />
+            <Route path="/login-empresa" element={<LoginCompany />} />
+            
           </Route>
 
           {/* GRUPO 2: Área Admin (Sem Layout padrão, usa a própria Navbar) */}

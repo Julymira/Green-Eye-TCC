@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Nova Denúncia - Green Eye</title>
+   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+
+    .mapa {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #e8f5e9; /* verde clarinho opcional */
+}
+
+ .container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #e8f5e9; /* verde clarinho opcional */
+}
+
+  /* Estilo do formulário */
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 10px;  
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 350px;
+  }
+    /* Select estilizado */
+    select {
+      width: 300px;
+      padding: 10px;
+      border-radius: 12px;
+      border: 2px solid #2e7d32;
+      background-color: #f9fdfa;
+      font-size: 16px;
+      color: #2e7d32;
+      cursor: pointer;
+    }
+
+    /* Container do upload customizado */
+    .custom-file-upload {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 2px solid #2e7d32;
+      border-radius: 12px;
+      padding: 10px;
+      width: 300px;
+      background-color: #f9fdfa;
+    }
+
+    /* Esconde o input file real */
+    input[type="file"] {
+      display: none;
+    }
+
+    /* Botão customizado */
+    .upload-button {
+      background-color: #2e7d32;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      margin-bottom: 5px;
+    }
+
+    .upload-button:hover {
+      background-color: #1b4d14;
+    }
+
+    /* Texto do nome do arquivo */
+    #file-name {
+      font-size: 14px;
+      color: #2e7d32;
+    }
+
+    /* Botão enviar */
+    button[type="submit"] {
+      width: 300px;
+      background-color: #2e7d32;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #1b4d14;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    textarea {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 15px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+        }
+
+  </style>
+</head>
+<body>
+
+  <!-- Navbar fixa no topo -->
+  <nav class="navbar">
+    <div class="logo"><a href="index.html">🌿 Green Eye</a></div>
+    <ul class="nav-links">
+      <li><a href="denuncia.html">Cadastrar Denúncia</a></li>
+      <li><a href="login.html">Login</a></li>
+    </ul>
+  </nav>
+
+  <div class="map">
+    <h2>Cadastrar Nova Denúncia</h2>
+
+    <!-- Mapa (Localização via SIG) -->
+    <label>Localização no mapa (clique para marcar):</label>
+    <div id="map"></div>
+    <input type="hidden" id="lat">
+    <input type="hidden" id="lng">
+
+  </div>
+
+  <div class="container">
+
+      <form class="form" id="denunciaForm">
+
+      <!-- Tipo de lixo -->
+      <label for="tipoLixo">Tipo de Lixo:</label>
+      <select id="tipoLixo" required>
+        <option value="">Selecione...</option>
+        <option>Lixo doméstico</option>
+        <option>Entulho (obra)</option>
+        <option>Eletrônicos</option>
+        <option>Móveis</option>
+        <option>Animal morto</option>
+        <option>Resíduo perigoso</option>
+      </select>
+
+      <!-- Quantidade -->
+      <label for="quantidade">Quantidade (opcional):</label>
+      <select id="quantidade">
+        <option value="">Selecione...</option>
+        <option>Pequena</option>
+        <option>Média</option>
+        <option>Grande</option>
+      </select>
+
+      <!-- Problemas causados -->
+      <label for="problemas">Problemas causados:</label>
+      <textarea id="problemas" required placeholder="Ex: mau cheiro, presença de insetos, risco de doenças..."></textarea>
+
+      <!-- Descrição adicional -->
+      <label for="descricao">Descrição adicional (opcional):</label>
+      <textarea id="descricao" placeholder="Descreva livremente a situação..."></textarea>
+
+      <!-- Foto -->
+      <div class="custom-file-upload">
+      <label for="foto" class="upload-button">Escolher Foto</label>
+      <input type="file" id="foto" name="foto" />
+      <span id="file-name">Nenhum arquivo escolhido</span>
+      </div>
+
+      <button type="submit">Enviar Denúncia</button>
+    </form>
+
+    </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // 1. LÓGICA DO MAPA
+    // Inicializa o mapa (Luziânia)
+    const map = L.map('map').setView([-16.2531, -47.9503], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker;
+    map.on('click', function(e) {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+
+      // Salva as coordenadas nos inputs escondidos
+      document.getElementById('lat').value = lat;
+      document.getElementById('lng').value = lng;
+
+      if (marker) {
+        map.removeLayer(marker);
+      }
+
+      marker = L.marker([lat, lng]).addTo(map)
+        .bindPopup('Local selecionado')
+        .openPopup();
+    });
+
+    // 2. LÓGICA DO UPLOAD DE ARQUIVO (Bônus para UI)
+    // Mostra o nome do arquivo selecionado
+    document.getElementById('foto').addEventListener('change', function() {
+        const fileName = this.files[0] ? this.files[0].name : 'Nenhum arquivo escolhido';
+        document.getElementById('file-name').textContent = fileName;
+    });
+
+
+    // 3. LÓGICA DE ENVIO DO FORMULÁRIO (A MUDANÇA PRINCIPAL)
+    // Substituímos a "simulação" pela função 'fetch' real
+    
+    document.getElementById('denunciaForm').addEventListener('submit', async function(e) {
+      e.preventDefault(); // Impede o recarregamento da página
+
+      // --- 1. Coletar todos os dados do formulário ---
+      const lat = document.getElementById('lat').value;
+      const lng = document.getElementById('lng').value;
+      
+      // Validação do mapa (mantida)
+      if (!lat || !lng) {
+        alert("Por favor, selecione a localização no mapa.");
+        return;
+      }
+      
+      const tipo_lixo = document.getElementById('tipoLixo').value;
+      const quantidade = document.getElementById('quantidade').value;
+      const problemas_causados = document.getElementById('problemas').value;
+      const descricao_adicional = document.getElementById('descricao').value;
+      // const fotoFile = document.getElementById('foto').files[0]; // (Não vamos enviar o arquivo ainda, conforme TCC I)
+
+      // --- 2. Montar o objeto JSON para enviar ---
+      // (Os nomes aqui devem ser IDÊNTICOS aos do backend em `req.body`)
+      const dadosDenuncia = {
+          tipo_lixo: tipo_lixo,
+          quantidade: quantidade,
+          problemas_causados: problemas_causados,
+          descricao_adicional: descricao_adicional,
+          lat: parseFloat(lat), // Enviar como número
+          lng: parseFloat(lng)  // Enviar como número
+      };
+
+      // --- 3. Enviar os dados para o Backend (API) ---
+      try {
+        // Esta é a rota 'POST' que você criou no 'denuncias.js'
+        const response = await fetch('/api/reports', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dadosDenuncia)
+        });
+
+        if (response.ok) {
+            // Sucesso! (Status 201)
+            const novaDenuncia = await response.json();
+            alert('Denúncia enviada com sucesso! (ID: ' + novaDenuncia.id + ')');
+            
+            // Limpa o formulário e o mapa
+            document.getElementById('denunciaForm').reset();
+            document.getElementById('file-name').textContent = 'Nenhum arquivo escolhido';
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            // Opcional: redireciona para a home
+            // window.location.href = 'index.html';
+
+        } else {
+            // Erro vindo do backend (ex: validação falhou, status 400)
+            const erro = await response.json();
+            alert('Erro ao enviar denúncia: ' + (erro.error || response.statusText));
+        }
+
+      } catch (err) {
+          // Erro de rede (ex: backend desligado)
+          console.error('Erro de conexão:', err);
+          alert('Erro de conexão. Não foi possível conectar ao servidor.');
+      }
+    });
+  </script>
+
+</body>
+</html>
