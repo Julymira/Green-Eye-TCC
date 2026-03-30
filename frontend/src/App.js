@@ -10,6 +10,7 @@ import Login from './Login';
 import Dashboard from './Dashboard';
 import RegisterCompany from './RegisterCompany';
 import LoginCompany from './LoginCompany';
+import DashboardCompany from './DashboardCompany';
 
 // --- NOVO: Layout para as páginas públicas (Com a Navbar padrão) ---
 function LayoutPublico() {
@@ -45,6 +46,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/cadastro-empresa" element={<RegisterCompany />} />
             <Route path="/login-empresa" element={<LoginCompany />} />
+            <Route path="/dashboard-empresa" element={<DashboardCompany />} />
             
           </Route>
 

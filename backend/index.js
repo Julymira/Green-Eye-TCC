@@ -36,6 +36,10 @@ app.get("/admin_dashboard.html", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/admin_dashboard.html"));
 });
 
+// Esta linha diz: "Para qualquer rota que o Node não conheça, envie o index.html do React"
+app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
