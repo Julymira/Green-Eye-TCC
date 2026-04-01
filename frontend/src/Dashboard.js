@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import axios from 'axios';
 import L from 'leaflet';
 
 // --- ÍCONES DO MAPA ---
@@ -103,13 +104,51 @@ function Dashboard() {
     };
 
     useEffect(() => {
-        carregarDados();
-        // eslint-disable-next-line
-    }, []);
+    // 🚩 1. A TRAVA DE SEGURANÇA
+    const needsChange = localStorage.getItem('needsPasswordChange');
+    const token = localStorage.getItem('token');
+
+    // Se não tem token ou se a senha ainda é temporária, tira o usuário daqui
+    if (!token) {
+        navigate('/');
+        return;
+    }
+
+    if (needsChange === 'true') {
+        alert("⚠️ Redefinição de senha obrigatória!");
+        navigate('/change-password');
+        return; // O 'return' impede que o código abaixo seja executado
+    }
+
+    // 2. CARREGAMENTO DOS DADOS (Só acontece se passar na trava acima)
+    const carregarDados = async () => {
+        try {
+            const res = await axios.get('http://localhost:3000/api/reports', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            if (Array.isArray(res.data)) {
+                setDenuncias(res.data);
+            } else {
+                setDenuncias([]); 
+            }
+        } catch (err) {
+            console.error("Erro ao carregar dashboard:", err);
+            setDenuncias([]);
+        }
+    };
+
+    carregarDados();
+}, [navigate]); 
 
     const handleLogout = () => {
-        navigate('/');
+    // Limpa o Local Storage
+    localStorage.clear(); 
+    alert("Você saiu do sistema.");
+    navigate('/'); // Volta para a Home
     };
+
+    
 
     // Estilos
     const tableStyle = { width: '100%', borderCollapse: 'collapse', marginTop: '10px' };
@@ -123,7 +162,7 @@ function Dashboard() {
                 <div className="brand" style={{color: 'white', fontSize: '20px', fontWeight: 'bold'}}>
                     📊 Painel do Gestor
                 </div>
-                <button onClick={handleLogout} style={{ background: 'white', color: '#c62828', border: 'none', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
+                <button onClick={handleLogout} className="btn-logout" style={{ background: 'white', color: '#c62828', border: 'none', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
                     Sair (Logout)
                 </button>
             </nav>

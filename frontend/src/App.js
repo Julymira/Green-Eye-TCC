@@ -11,6 +11,7 @@ import Dashboard from './Dashboard';
 import RegisterCompany from './RegisterCompany';
 import LoginCompany from './LoginCompany';
 import DashboardCompany from './DashboardCompany';
+import ChangePassword from './ChangePassword';
 
 // --- NOVO: Layout para as páginas públicas (Com a Navbar padrão) ---
 function LayoutPublico() {
@@ -47,6 +48,7 @@ function App() {
             <Route path="/cadastro-empresa" element={<RegisterCompany />} />
             <Route path="/login-empresa" element={<LoginCompany />} />
             <Route path="/dashboard-empresa" element={<DashboardCompany />} />
+            <Route path="/change-password" element={<ChangePassword />} />
             
           </Route>
 

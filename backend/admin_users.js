@@ -1,9 +1,22 @@
-const express = require("express");
+const jwt = require('jsonwebtoken');const express = require("express");
+const JWT_SECRET = process.env.JWT_SECRET || 'minha_chave_secreta_tcc_2026';
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const db = require("./db");
 
 const router = express.Router();
+
+const { verifyToken } = require('./auth');
+
+// Somente usuários logados podem ver a lista de denúncias
+router.get('/reports', verifyToken, async (req, res) => {
+    // Se chegou aqui, é porque o Token é válido!
+    // Você pode até verificar se o usuário é admin:
+    if (req.user.userType !== 'admin') {
+        return res.status(403).json({ error: "Apenas administradores podem ver isso." });
+    }
+    
+});
 
 // POST: Cadastrar usuário administrador (apenas para uso interno/inicial)
 router.post("/admin/register", async (req, res) => {
@@ -30,40 +43,54 @@ router.post("/admin/register", async (req, res) => {
 });
 
 // POST: Login de usuário administrador
-router.post("/admin/login", async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ error: "Email e senha são obrigatórios" });
-    }
+router.post("/login", async (req, res) => {
+    const { cpf, password } = req.body; // O CPF já vem limpo do frontend
 
     try {
-        const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+        // 1. Busca o usuário pelo CPF
+        const result = await db.query('SELECT id, email, password, cpf, is_temp_password FROM public.users WHERE cpf = $1', [cpf]);
+
+        // 2. Verifica se encontrou alguém
         if (result.rows.length === 0) {
+            console.log("❌ Nenhum usuário encontrado com este CPF no banco.");
             return res.status(401).json({ error: "Credenciais inválidas." });
         }
 
+        // 3. PEGA O PRIMEIRO USUÁRIO DA LISTA (Obrigatório!)
         const user = result.rows[0];
+
+        // 4. TESTE DE LOG (Para você ver no console se os dados chegaram)
+        console.log("✅ Usuário extraído da lista:", user.email);
+        console.log("✅ Hash encontrado:", user.password);
+
+        // 5. COMPARAÇÃO (Agora vai funcionar sem erro de 'arguments required')
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
             return res.status(401).json({ error: "Credenciais inválidas." });
         }
 
-        // Verifica se é senha temporária
-        const needsPasswordChange = user.is_temp_password || false;
+        // 4. Gera o Token JWT
+        const token = jwt.sign(
+            { id: user.id, userType: 'admin' }, 
+            JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
 
+        // 5. Retorna o sucesso
         res.json({ 
-            message: "Login de administrador bem-sucedido!", 
+            message: "Sucesso!", 
+            token, 
             user: { 
                 id: user.id, 
                 email: user.email,
-                needsPasswordChange: needsPasswordChange
+                needsPasswordChange: user.is_temp_password // 👈 Adicione isso
             } 
         });
+
     } catch (error) {
-        console.error("Erro ao fazer login do administrador:", error);
-        res.status(500).json({ error: "Erro interno do servidor." });
+        console.error("Erro no login:", error);
+        res.status(500).json({ error: "Erro interno no servidor." });
     }
 });
 
@@ -75,17 +102,15 @@ router.post("/admin/change-password", async (req, res) => {
         return res.status(400).json({ error: "Email, senha atual e nova senha são obrigatórios" });
     }
 
-    if (newPassword.length < 6) {
-        return res.status(400).json({ error: "A nova senha deve ter pelo menos 6 caracteres" });
-    }
-
     try {
-        // Verifica se o usuário existe e a senha atual está correta
+        // Busca pelo email enviado no formulário
         const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+
         if (result.rows.length === 0) {
-            return res.status(401).json({ error: "Credenciais inválidas." });
+            return res.status(401).json({ error: "Usuário não encontrado." });
         }
 
+        // Adicionamos o aqui também
         const user = result.rows[0];
         const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
 
@@ -93,7 +118,6 @@ router.post("/admin/change-password", async (req, res) => {
             return res.status(401).json({ error: "Senha atual incorreta." });
         }
 
-        // Atualiza a senha e marca como não temporária
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
         await db.query(
             "UPDATE users SET password = $1, is_temp_password = FALSE WHERE email = $2",

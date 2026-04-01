@@ -1,21 +1,48 @@
-// src/Login.js
+// src/LoginManager.js
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
 function Login() {
-    const [email, setEmail] = useState('');
+    const [cpf, setCpf] = useState('');
     const [senha, setSenha] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = (e) => {
-        e.preventDefault();
-        // Login "Fake" para o MVP (Igual ao seu anterior)
-        if (email === 'admin@greeneye.com' && senha === 'admin123') {
-            navigate('/admin');
-        } else {
-            alert('❌ E-mail ou senha incorretos!');
+    const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+
+        // Remove tudo que não for número antes de enviar para o banco
+        const cpfLimpo = cpf.replace(/\D/g, '');
+
+        const response = await axios.post('http://localhost:3000/api/login', {
+            cpf: cpfLimpo, // enviando a variável cpf do state
+            password: senha
+        });
+
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('userType', 'admin');
+            localStorage.setItem('userEmail', response.data.user.email);
+            
+            // Forçamos o 'true' ou 'false' a virar texto:
+            localStorage.setItem('needsPasswordChange', String(response.data.user.needsPasswordChange));
+
+            if (response.data.user.needsPasswordChange === true) {
+                alert('🚩 Atenção: Sua senha é temporária e precisa ser alterada agora.');
+                navigate('/change-password');
+            } else {
+                alert('✅ Login realizado!');
+                navigate('/admin');
+            }
         }
-    };
+
+
+    } catch (error) {
+        console.error(error);
+        alert('❌ Erro no login: ' + (error.response?.data?.error || 'Servidor offline'));
+    }
+};
 
     // Estilos inline específicos para ficar igual à imagem
     const inputStyle = {
@@ -57,14 +84,14 @@ function Login() {
 
                 <form onSubmit={handleLogin}>
                     <div className="form-group">
-                        <label className="form-label">Email do Administrador</label>
+                        <label className="form-label">CPF do Administrador</label>
                         <input 
-                            type="email" 
+                            type="text" 
                             className="form-input" 
                             style={inputStyle}
-                            value={email} 
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="admin@greeneye.com"
+                            value={cpf} 
+                            onChange={(e) => setCpf(e.target.value)}
+                            placeholder="000.000.000-00"
                         />
                     </div>
                     <div className="form-group">

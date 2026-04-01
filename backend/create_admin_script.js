@@ -5,41 +5,28 @@ const crypto = require("crypto");
 async function createFirstAdmin() {
     try {
         const email = "admin@greeneye.com";
+        const cpf = "00000000000"; // 👈 COLOQUE O SEU CPF AQUI (apenas os 11 números)
         const tempPassword = crypto.randomBytes(8).toString("hex");
         
         console.log("🔐 Criando primeiro administrador...");
         console.log("📧 Email:", email);
+        console.log("🆔 CPF:", cpf);
         console.log("🔑 Senha temporária:", tempPassword);
         
-        const existingAdmin = await db.query("SELECT id FROM users WHERE email = $1", [email]);
+        const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+        // ATENÇÃO: Adicionei "cpf" na lista de colunas e o "$3" nos values
+        const result = await db.query(
+            "INSERT INTO users (email, password, cpf, is_temp_password) VALUES ($1, $2, $3, TRUE) RETURNING id",
+            [email, hashedPassword, cpf] // 👈 O CPF entra como o terceiro parâmetro
+        );
         
-        if (existingAdmin.rows.length > 0) {
-            console.log("⚠️  Administrador já existe! Gerando nova senha temporária...");
-            
-            const hashedPassword = await bcrypt.hash(tempPassword, 10);
-            await db.query("UPDATE users SET password = $1, is_temp_password = TRUE WHERE email = $2", [hashedPassword, email]);
-            
-            console.log("✅ Senha temporária atualizada com sucesso!");
-        } else {
-            const hashedPassword = await bcrypt.hash(tempPassword, 10);
-            const result = await db.query(
-                "INSERT INTO users (email, password, is_temp_password) VALUES ($1, $2, TRUE) RETURNING id",
-                [email, hashedPassword]
-            );
-            
-            console.log("✅ Primeiro administrador criado com sucesso!");
-            console.log("🆔 ID do administrador:", result.rows[0].id);
-        }
+        console.log("✅ Primeiro administrador criado com sucesso!");
+        console.log("🆔 ID do administrador:", result.rows.id);
         
-        console.log("\n📋 INFORMAÇÕES IMPORTANTES:");
-        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        console.log("📧 Email de login:", email);
-        console.log("🔑 Senha temporária:", tempPassword);
-        console.log("🌐 URL de login: http://localhost:3000/login.html");
-        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        console.log("⚠️  IMPORTANTE: Anote essas credenciais em local seguro!");
-        console.log("⚠️  A senha DEVE ser alterada no primeiro login.");
-        console.log("");
+        console.log("\n📋 DADOS PARA LOGIN:");
+        console.log("CPF:", cpf);
+        console.log("SENHA:", tempPassword);
         
     } catch (error) {
         console.error("❌ Erro ao criar administrador:", error.message);
