@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import './RegisterCompany.css'; 
 
 function RegisterCompany() {
     const [formData, setFormData] = useState({
@@ -36,11 +37,8 @@ function RegisterCompany() {
         if (selectedCategories.includes(categoryId)) {
             setSelectedCategories(selectedCategories.filter(id => id !== categoryId));
         } else {
-            if (selectedCategories.length < 3) {
-                setSelectedCategories([...selectedCategories, categoryId]);
-            } else {
-                alert("⚠️ Como empresa parceira, você pode selecionar no máximo 3 categorias.");
-            }
+            // Removemos o "if (selectedCategories.length < 3)"
+            setSelectedCategories([...selectedCategories, categoryId]);
         }
     };
 
@@ -131,20 +129,24 @@ function RegisterCompany() {
                     </div>
 
                     {/* SEÇÃO DE CATEGORIAS ESTILIZADA */}
-                    <div className="categories-section" style={{ border: '1px solid #bbdefb', backgroundColor: '#f0f7ff' }}>
-                        <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#01579b' }}>
-                            ♻️ O que sua empresa coleta? (Máximo 3)
+                    <div className="categories-section">
+                        <h4 className="categories-title">
+                            ♻️ O que sua empresa coleta? (Selecione todas as desejadas)
                         </h4>
                         <div className="categories-grid">
-                            {categories.map(cat => (
-                                <button 
+                            {categories.map((cat) => (
+                                <label
                                     key={cat.id}
-                                    type="button"
-                                    className={selectedCategories.includes(cat.id) ? 'cat-btn active' : 'cat-btn'}
-                                    onClick={() => handleCategoryToggle(cat.id)}
+                                    className={`category-chip ${selectedCategories.includes(cat.id) ? 'active' : ''}`}
                                 >
-                                    {cat.nome}
-                                </button>
+                                <input
+                                    type="checkbox"
+                                    checked={selectedCategories.includes(cat.id)}
+                                    onChange={() => handleCategoryToggle(cat.id)}
+                                    style={{ display: 'none' }}
+                                />
+                                {cat.nome}
+                                </label>
                             ))}
                         </div>
                     </div>

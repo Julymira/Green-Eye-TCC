@@ -103,3 +103,52 @@ input:focus {
 .submit-btn:hover {
     background-color: #1b5e20;
 }
+
+/* Container principal das categorias */
+.categories-section {
+    border: 1px solid #bbdefb;
+    background-color: #f0f7ff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.categories-title {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #01579b;
+}
+
+/* Container que segura todos os botões */
+.categories-grid {
+  display: flex;
+  flex-wrap: wrap; /* Faz quebrar linha se não couber */
+  gap: 10px;       /* Dá o espaçamento entre eles */
+  margin-top: 10px;
+}
+
+/* O botão em si (Chip) */
+.category-chip {
+  padding: 8px 16px;
+  border: 2px solid #2e7d32; /* Borda verde */
+  border-radius: 20px;
+  background-color: white;
+  color: #2e7d32;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+/* Quando estiver selecionado (Ativo) */
+.category-chip.active {
+  background-color: #2e7d32 !important;
+  color: white !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Efeito ao passar o mouse */
+.category-chip:hover {
+  background-color: #f1f8e9;
+}
