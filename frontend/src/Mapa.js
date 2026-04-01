@@ -52,10 +52,26 @@ function Mapa() {
 
     // Carregar dados
     useEffect(() => {
-        fetch('/api/reports')
-            .then(res => res.json())
-            .then(data => setDenuncias(data))
-            .catch(err => console.error("Erro ao buscar denúncias:", err));
+        // 2. Usamos a URL completa para evitar problemas de porta (3000 vs 3001)
+        fetch('http://localhost:3000/api/reports')
+            .then(res => {
+                // Verifica se a resposta foi bem sucedida (status 200)
+                if (!res.ok) throw new Error("Erro na resposta do servidor");
+                return res.json();
+            })
+            .then(data => {
+                // 3. PROTEÇÃO: Garante que 'data' é uma lista antes de salvar
+                if (Array.isArray(data)) {
+                    setDenuncias(data);
+                } else {
+                    console.error("Dados recebidos não são um array:", data);
+                    setDenuncias([]);
+                }
+            })
+            .catch(err => {
+                console.error("Erro ao buscar denúncias:", err);
+                setDenuncias([]); // Limpa em caso de erro para o mapa carregar vazio
+            });
     }, []);
 
     return (
