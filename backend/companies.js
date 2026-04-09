@@ -19,23 +19,22 @@ router.post('/login', async (req, res) => {
     const cnpjLimpo = cnpj.replace(/\D/g, '');
 
     try {
-        // Busca a empresa
-        const result = await db.query('SELECT * FROM public.companies WHERE cnpj = $1', [cnpjLimpo]);
+        const result = await pool.query('SELECT * FROM public.companies WHERE cnpj = $1', [cnpjLimpo]);
 
         if (result.rows.length === 0) {
-        return res.status(401).json({ error: "CNPJ ou senha incorretos." });
+            return res.status(401).json({ error: "CNPJ ou senha incorretos." });
         }
 
-        const company = result.rows[0];
+        const company = result.rows; // Pegamos a primeira empresa da lista
 
         // Compara a senha digitada com o hash do banco
         const isPasswordValid = await bcrypt.compare(password, company.password);
 
         if (!isPasswordValid) {
-        return res.status(401).json({ error: "CNPJ ou senha incorretos." });
+            return res.status(401).json({ error: "CNPJ ou senha incorretos." });
         }
 
-        // Gera o Token
+        // Gera o Token JWT para a Empresa
         const token = jwt.sign(
             { id: company.id, userType: 'company', name: company.nome_fantasia },
             JWT_SECRET,

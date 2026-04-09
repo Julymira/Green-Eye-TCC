@@ -77,11 +77,9 @@ function LoginCompany() {
                         <input 
                             type="text" 
                             className="form-input" 
-                            style={inputStyle} // Adicionei o estilo azul clarinho para padronizar
-                            value={cnpj} 
-                            onChange={(e) => setCnpj(e.target.value)} 
+                            value={cnpj} // Aqui usamos a variável 'cnpj'
+                            onChange={(e) => setCnpj(e.target.value)} // Aqui atualizamos ela
                             placeholder="00.000.000/0000-00"
-                            required
                         />
                     </div>
                     <div className="form-group">
