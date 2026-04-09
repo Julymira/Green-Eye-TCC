@@ -15,7 +15,7 @@ function Login() {
         // Remove tudo que não for número antes de enviar para o banco
         const cpfLimpo = cpf.replace(/\D/g, '');
 
-        const response = await axios.post('http://localhost:3000/api/login', {
+        const response = await axios.post('http://localhost:3000/api/admin/login', {
             cpf: cpfLimpo, // enviando a variável cpf do state
             password: senha
         });

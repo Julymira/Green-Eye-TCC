@@ -19,7 +19,7 @@ router.get('/reports', verifyToken, async (req, res) => {
 });
 
 // POST: Cadastrar usuário administrador (apenas para uso interno/inicial)
-router.post("/admin/register", async (req, res) => {
+router.post("/register", async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -95,7 +95,7 @@ router.post("/login", async (req, res) => {
 });
 
 // POST: Alterar senha (obrigatório para senhas temporárias)
-router.post("/admin/change-password", async (req, res) => {
+router.post("/change-password", async (req, res) => {
     const { email, currentPassword, newPassword } = req.body;
 
     if (!email || !currentPassword || !newPassword) {
@@ -132,7 +132,7 @@ router.post("/admin/change-password", async (req, res) => {
 });
 
 // POST: Gerar senha temporária para um usuário existente
-router.post("/admin/generate-temp-password", async (req, res) => {
+router.post("/generate-temp-password", async (req, res) => {
     const { email } = req.body;
 
     if (!email) {

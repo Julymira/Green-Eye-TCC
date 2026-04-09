@@ -17,7 +17,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use('/api', adminUsersRouter);
+app.use('/api/admin', adminUsersRouter);
 app.use('/api/reports', denunciasRouter);
 app.use('/api/companies', companiesRouter);
 
