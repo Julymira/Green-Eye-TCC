@@ -3,31 +3,34 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 function LoginCompany() {
-    const [email, setEmail] = useState('');
+    const [cnpj, setCnpj] = useState(''); 
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
-        e.preventDefault();
-        
-        try {
-            // Rota para autenticar empresas (E-mail + Senha)
-            const response = await axios.post('http://localhost:3000/api/companies/login', {
-                email_contato: email,
-                password: password
-            });
+    e.preventDefault();
+    
+    try {
+        // 1. Enviamos o CNPJ (pode ser com máscara, o backend vai limpar)
+        const response = await axios.post('http://localhost:3000/api/companies/login', {
+            cnpj: cnpj, // Certifique-se de que o estado se chama 'cnpj'
+            password: password
+        });
 
-            if (response.data.token) {
-                // Salva o token para persistência e identifica o tipo de usuário
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('userType', 'company');
-                alert('✅ Login realizado com sucesso!');
-                navigate('/dashboard-empresa'); // Página que criaremos para o "match" de lixo
-            }
-        } catch (error) {
-            alert('❌ E-mail ou senha incorretos!');
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('userType', 'company');
+            // Dica: Salve o nome da empresa para mostrar no Dashboard
+            localStorage.setItem('userName', response.data.user.nome); 
+            
+            alert(`✅ Bem-vinda, ${response.data.user.nome}!`);
+            navigate('/dashboard-empresa');
         }
-    };
+    } catch (error) {
+        // Mostra o erro real que vem do backend (ex: CNPJ ou senha incorretos)
+        alert('❌ ' + (error.response?.data?.error || 'Erro ao conectar com o servidor'));
+    }
+};
 
     // Estilos inline para seguir o padrão do seu Login.js
     const inputStyle = {
@@ -69,14 +72,15 @@ function LoginCompany() {
 
                 <form onSubmit={handleLogin}>
                     <div className="form-group">
-                        <label className="form-label">E-mail de Contato</label>
+                        {/* Mudamos de 'E-mail' para 'CNPJ' para bater com o banco de dados */}
+                        <label className="form-label">CNPJ da Empresa</label> 
                         <input 
-                            type="email" 
+                            type="text" 
                             className="form-input" 
-                            style={inputStyle}
-                            value={email} 
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="contato@empresa.com"
+                            style={inputStyle} // Adicionei o estilo azul clarinho para padronizar
+                            value={cnpj} 
+                            onChange={(e) => setCnpj(e.target.value)} 
+                            placeholder="00.000.000/0000-00"
                             required
                         />
                     </div>

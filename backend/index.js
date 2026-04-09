@@ -20,7 +20,6 @@ app.use(express.json());
 app.use('/api', adminUsersRouter);
 app.use('/api/reports', denunciasRouter);
 app.use('/api/companies', companiesRouter);
-app.use('/api/companies', companiesRouter);
 
 
 // Testa a conexão imediatamente ao iniciar
@@ -28,9 +27,16 @@ app.use('/api/companies', companiesRouter);
   try {
     await pool.query('SELECT 1');
     console.log('✅ Conexão com o banco de dados estabelecida com sucesso!');
-  } catch (err) {
-    console.error('❌ Erro ao conectar ao banco de dados:', err.message);
-    process.exit(1);
+  } catch (error) {
+      console.log("ERRO COMPLETO:", error);
+
+      if (error.response) {
+          alert('❌ ' + error.response.data.error);
+      } else if (error.request) {
+          alert('❌ Sem resposta do servidor (backend offline)');
+      } else {
+          alert('❌ Erro ao enviar requisição');
+      }
   }
 })();
 
@@ -41,7 +47,7 @@ app.get("/admin_dashboard.html", (req, res) => {
 
 // Esta linha diz: "Para qualquer rota que o Node não conheça, envie o index.html do React"
 app.get(/.*/, (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
