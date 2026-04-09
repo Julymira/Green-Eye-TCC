@@ -6,9 +6,6 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'minha_chave_secreta_tcc_2026';
 
-// -----------------------------------------------------------
-// 1. ROTA DE LOGIN (Para empresas parceiras)
-// -----------------------------------------------------------
 router.post('/login', async (req, res) => {
     const { cnpj, password } = req.body;
 
@@ -19,13 +16,15 @@ router.post('/login', async (req, res) => {
     const cnpjLimpo = cnpj.replace(/\D/g, '');
 
     try {
-        const result = await pool.query('SELECT * FROM public.companies WHERE cnpj = $1', [cnpjLimpo]);
+        // CORREÇÃO: Usando db.query conforme seu db.js exporta
+        const result = await db.query('SELECT * FROM public.companies WHERE cnpj = $1', [cnpjLimpo]);
 
         if (result.rows.length === 0) {
             return res.status(401).json({ error: "CNPJ ou senha incorretos." });
         }
 
-        const company = result.rows; // Pegamos a primeira empresa da lista
+        // CORREÇÃO: Pegando o primeiro item do array
+        const company = result.rows[0]; 
 
         // Compara a senha digitada com o hash do banco
         const isPasswordValid = await bcrypt.compare(password, company.password);
