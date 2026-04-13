@@ -13,7 +13,7 @@ router.post('/', upload.single('foto'), async (req, res) => {
     const client = await pool.connect();
     try {
         const {
-            tipo_lixo,
+            categorias,
             quantidade,
             problemas_causados,
             descricao_adicional,
@@ -21,13 +21,18 @@ router.post('/', upload.single('foto'), async (req, res) => {
             lng
         } = req.body;
 
+        // Multer retorna string se vier um valor, array se vier múltiplos
+        const categoriasArray = Array.isArray(categorias)
+            ? categorias.map(Number)
+            : [Number(categorias)];
+
         const photoBuffer = req.file ? req.file.buffer : null;
         const extensao = req.file
             ? req.file.originalname.split('.').pop().toLowerCase()
             : null;
 
-        if (!lat || !lng || !tipo_lixo) {
-            return res.status(400).json({ error: 'Localização e Tipo de Lixo são obrigatórios.' });
+        if (!lat || !lng || !categorias) {
+            return res.status(400).json({ error: 'Localização e Tipo de Resíduo são obrigatórios.' });
         }
 
         await client.query('BEGIN');
@@ -50,10 +55,14 @@ router.post('/', upload.single('foto'), async (req, res) => {
 
         const reportId = resReport.rows[0].id;
 
-        // 2. Vincular a categoria na tabela intermediária
-        await client.query(
-            'INSERT INTO report_categories (report_id, category_id) VALUES ($1, $2)',
-            [reportId, tipo_lixo]
+        // Vincular todas as categorias na tabela intermediária
+        await Promise.all(
+            categoriasArray.map(categoryId =>
+                client.query(
+                    'INSERT INTO report_categories (report_id, category_id) VALUES ($1, $2)',
+                    [reportId, categoryId]
+                )
+            )
         );
 
         await client.query('COMMIT');

@@ -1,9 +1,10 @@
 // src/NovaOcorrencia.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import './RegisterCompany.css';
 
 // --- ÍCONES ---
 import iconMarker from 'leaflet/dist/images/marker-icon.png';
@@ -37,9 +38,23 @@ function NovaOcorrencia() {
     const navigate = useNavigate();
     const [fileName, setFileName] = useState('Nenhum arquivo escolhido');
     const [foto, setFoto] = useState(null);
-    
+    const [categorias, setCategorias] = useState([]);
+    const [categoriasSelecionadas, setCategoriasSelecionadas] = useState([]);
+
+    useEffect(() => {
+        fetch('http://localhost:3000/api/companies/categories')
+            .then(res => res.json())
+            .then(data => setCategorias(data))
+            .catch(err => console.error('Erro ao buscar categorias:', err));
+    }, []);
+
+    const handleCategoriaChange = (id) => {
+        setCategoriasSelecionadas(prev =>
+            prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+        );
+    };
+
     const [form, setForm] = useState({
-        tipo_lixo: 'Entulho (Construção Civil)',
         quantidade: 'Pequena',
         problemas_causados: '',
         descricao_adicional: '',
@@ -73,9 +88,14 @@ function NovaOcorrencia() {
             return;
         }
 
+        if (categoriasSelecionadas.length === 0) {
+            alert("⚠️ Selecione pelo menos um tipo de resíduo.");
+            return;
+        }
+
         try {
             const formData = new FormData();
-            formData.append('tipo_lixo', form.tipo_lixo);
+            categoriasSelecionadas.forEach(id => formData.append('categorias', id));
             formData.append('quantidade', form.quantidade);
             formData.append('problemas_causados', form.problemas_causados);
             formData.append('descricao_adicional', form.descricao_adicional);
@@ -149,17 +169,26 @@ function NovaOcorrencia() {
                     {/* AJUSTE AQUI: Margem inferior padrão para alinhar visualmente */}
                     <h3 style={{marginTop: 0, marginBottom: '15px', color: '#2e7d32'}}>2. Detalhes da Ocorrência</h3>
 
-                    <div className="form-group">
-                        <label className="form-label">Tipo de Resíduo:</label>
-                        <select name="tipo_lixo" className="form-select" value={form.tipo_lixo} onChange={handleChange}>
-                            <option>Entulho (Construção Civil)</option>
-                            <option>Lixo Doméstico</option>
-                            <option>Resíduos Hospitalares</option>
-                            <option>Resíduos Industriais</option>
-                            <option>Móveis / Eletrodomésticos</option>
-                            <option>Animal Morto</option>
-                            <option>Outros</option>
-                        </select>
+                    <div className="categories-section">
+                        <h4 className="categories-title">
+                            ♻️ Tipo de Resíduo (selecione todos que se aplicam)
+                        </h4>
+                        <div className="categories-grid">
+                            {categorias.map(cat => (
+                                <label
+                                    key={cat.id}
+                                    className={`category-chip ${categoriasSelecionadas.includes(cat.id) ? 'active' : ''}`}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={categoriasSelecionadas.includes(cat.id)}
+                                        onChange={() => handleCategoriaChange(cat.id)}
+                                        style={{ display: 'none' }}
+                                    />
+                                    {cat.nome}
+                                </label>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="form-group">
