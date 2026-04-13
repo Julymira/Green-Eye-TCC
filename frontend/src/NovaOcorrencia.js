@@ -36,6 +36,7 @@ function LocationMarker({ setPosicao }) {
 function NovaOcorrencia() {
     const navigate = useNavigate();
     const [fileName, setFileName] = useState('Nenhum arquivo escolhido');
+    const [foto, setFoto] = useState(null);
     
     const [form, setForm] = useState({
         tipo_lixo: 'Entulho (Construção Civil)',
@@ -53,8 +54,10 @@ function NovaOcorrencia() {
     const handleFileChange = (e) => {
         if (e.target.files.length > 0) {
             setFileName(e.target.files[0].name);
+            setFoto(e.target.files[0]);
         } else {
             setFileName('Nenhum arquivo escolhido');
+            setFoto(null);
         }
     };
 
@@ -71,10 +74,18 @@ function NovaOcorrencia() {
         }
 
         try {
+            const formData = new FormData();
+            formData.append('tipo_lixo', form.tipo_lixo);
+            formData.append('quantidade', form.quantidade);
+            formData.append('problemas_causados', form.problemas_causados);
+            formData.append('descricao_adicional', form.descricao_adicional);
+            formData.append('lat', form.lat);
+            formData.append('lng', form.lng);
+            if (foto) formData.append('foto', foto);
+
             const response = await fetch('/api/reports', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form)
+                body: formData
             });
 
             if (response.ok) {
@@ -111,10 +122,10 @@ function NovaOcorrencia() {
                     </p>
                     
                     <div className="form-map-large">
-                        <MapContainer 
-                            center={[-16.2531, -47.9503]} 
-                            zoom={14} 
-                            style={{ height: '100%', width: '100%', minHeight: '100%' }}
+                        <MapContainer
+                            center={[-16.2531, -47.9503]}
+                            zoom={14}
+                            style={{ height: '100%', width: '100%' }}
                         >
                             <TileLayer
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

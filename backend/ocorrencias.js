@@ -1,49 +1,51 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('./db'); 
+const pool = require('./db');
+const multer = require('multer');
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 /*
  * 1. ROTA DE CRIAÇÃO (POST)
  * Agora salva na tabela intermediária report_categories
  */
-router.post('/', async (req, res) => {
-    const client = await pool.connect(); // Usamos client para transação
+router.post('/', upload.single('foto'), async (req, res) => {
+    const client = await pool.connect();
     try {
-        const { 
-            tipo_lixo, // Isso agora deve ser o ID da categoria (ex: 1, 2...)
-            quantidade, 
-            problemas_causados, 
-            descricao_adicional, 
-            lat, 
-            lng 
+        const {
+            tipo_lixo,
+            quantidade,
+            problemas_causados,
+            descricao_adicional,
+            lat,
+            lng
         } = req.body;
 
-        // (Aqui virá a lógica de UPLOAD DE FOTO no TCC II. 
-        // Por enquanto, vamos salvar 'null' no campo photo_url)
-        const savedPhotoUrl = null; 
+        const photoBuffer = req.file ? req.file.buffer : null;
+        const extensao = req.file
+            ? req.file.originalname.split('.').pop().toLowerCase()
+            : null;
 
-        // 2. Validar dados (exemplo)
         if (!lat || !lng || !tipo_lixo) {
             return res.status(400).json({ error: 'Localização e Tipo de Lixo são obrigatórios.' });
         }
 
         await client.query('BEGIN');
 
-        // 1. Inserir na tabela reports (SEM a coluna tipo_lixo)
         const novaOcorrenciaQuery = `
             INSERT INTO reports (
                 lat, lng, descricao_adicional,
                 quantidade, problemas_causados,
-                photo_url, status
+                photo_content, extensao, status
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING id;
         `;
 
         const resReport = await client.query(novaOcorrenciaQuery, [
-            lat, lng, descricao_adicional, 
-            quantidade, problemas_causados, 
-            null, 'Nova'
+            lat, lng, descricao_adicional,
+            quantidade, problemas_causados,
+            photoBuffer, extensao, 'Nova'
         ]);
 
         const reportId = resReport.rows[0].id;
@@ -112,7 +114,34 @@ router.get('/', async (req, res) => {
 });
 
 /*
- * 3. ROTA DE ATUALIZAÇÃO (PUT)
+ * 3. ROTA DE IMAGEM (GET)
+ * Serve os bytes da foto armazenada no banco
+ */
+router.get('/:id/foto', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await pool.query(
+            'SELECT photo_content, extensao FROM reports WHERE id = $1',
+            [id]
+        );
+
+        if (result.rows.length === 0 || !result.rows[0].photo_content) {
+            return res.status(404).send('Imagem não encontrada');
+        }
+
+        const { photo_content, extensao } = result.rows[0];
+        const contentType = extensao === 'jpg' ? 'image/jpeg' : `image/${extensao}`;
+
+        res.set('Content-Type', contentType);
+        res.send(photo_content);
+    } catch (err) {
+        console.error('Erro ao buscar imagem:', err.message);
+        res.status(500).send('Erro ao buscar imagem.');
+    }
+});
+
+/*
+ * 4. ROTA DE ATUALIZAÇÃO (PUT)
  */
 router.put('/:id', async (req, res) => {
     try {
