@@ -168,7 +168,7 @@ body {
 .bg-orange { background-color: #fb8c00; }
 .bg-blue { background-color: #0288d1;}
 
-/* 6. ESTILOS DO FORMULÁRIO (NovaDenuncia e Login) */
+/* 6. ESTILOS DO FORMULÁRIO (NovaOcorrencia e Login) */
 .form-container {
   padding: 40px 20px;
   display: flex;
@@ -343,16 +343,16 @@ input[type="file"] {
   }
 }
 
-/* 8. LAYOUT DA PÁGINA DE DENÚNCIA (LADO A LADO E MESMA ALTURA) */
+/* 8. LAYOUT DA PÁGINA DE OCORRÊNCIA (LADO A LADO E MESMA ALTURA) */
 
-.denuncia-container {
+.ocorrencia-container {
   /* Topo: 10px | Laterais: 20px | Fundo: 40px */
   padding: 10px 20px 40px 20px; 
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.denuncia-grid {
+.ocorrencia-grid {
   display: grid;
   /* MUDANÇA DE PROPORÇÃO: */
   /* 1.5fr para o mapa (mais largo) e 1fr para o formulário (mais estreito) */
@@ -361,7 +361,7 @@ input[type="file"] {
   align-items: stretch; 
 }
 
-.denuncia-card {
+.ocorrencia-card {
   background: white;
   padding: 30px;
   border-radius: 12px;
@@ -394,7 +394,7 @@ input[type="file"] {
 
 /* RESPONSIVIDADE (CELULAR) */
 @media (max-width: 900px) {
-  .denuncia-grid {
+  .ocorrencia-grid {
     grid-template-columns: 1fr;
     height: auto;
   }

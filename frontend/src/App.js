@@ -5,7 +5,7 @@ import './App.css';
 
 // Importando as páginas
 import Home from './Home';
-import NovaDenuncia from './NovaDenuncia';
+import NovaOcorrencia from './NovaOcorrencia';
 import Login from './Login';
 import Dashboard from './Dashboard';
 import RegisterCompany from './RegisterCompany';
@@ -22,7 +22,7 @@ function LayoutPublico() {
           <Link to="/">🌿 Green Eye</Link>
         </div>
         <div className="nav-links">
-          <Link to="/denunciar">+ Denunciar</Link>
+          <Link to="/ocorrencia">Nova Ocorrência</Link>
           <Link to="/login-empresa">Empresas</Link> 
           <Link to="/login">Gestores</Link>
         </div>
@@ -43,7 +43,7 @@ function App() {
           {/* GRUPO 1: Páginas Públicas (Usam o Layout com Navbar "Green Eye") */}
           <Route element={<LayoutPublico />}>
           <Route path="/" element={<Home />} />
-          <Route path="/denunciar" element={<NovaDenuncia />} />
+          <Route path="/ocorrencia" element={<NovaOcorrencia />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro-empresa" element={<RegisterCompany />} />
           <Route path="/login-empresa" element={<LoginCompany />} />

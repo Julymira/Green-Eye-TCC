@@ -22,16 +22,16 @@ L.Marker.prototype.options.icon = DefaultIcon;
 // ----------------------------------------------
 
 function Mapa() {
-    const [denuncias, setDenuncias] = useState([]);
+    const [ocorrencias, setOcorrencias] = useState([]);
 
     // Lógica das Cores
-    const getIcon = (denuncia) => {
+    const getIcon = (ocorrencia) => {
         let iconUrl;
         
-        if (denuncia.status === 'Resolvida') {
+        if (ocorrencia.status === 'Resolvida') {
             iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png';
         } else {
-            const qtd = (denuncia.quantidade || '').toLowerCase();
+            const qtd = (ocorrencia.quantidade || '').toLowerCase();
             if (qtd.includes('alto') || qtd.includes('grande')) {
                 iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png';
             } else if (qtd.includes('médio') || qtd.includes('media')) {
@@ -62,15 +62,15 @@ function Mapa() {
             .then(data => {
                 // 3. PROTEÇÃO: Garante que 'data' é uma lista antes de salvar
                 if (Array.isArray(data)) {
-                    setDenuncias(data);
+                    setOcorrencias(data);
                 } else {
                     console.error("Dados recebidos não são um array:", data);
-                    setDenuncias([]);
+                    setOcorrencias([]);
                 }
             })
             .catch(err => {
                 console.error("Erro ao buscar denúncias:", err);
-                setDenuncias([]); // Limpa em caso de erro para o mapa carregar vazio
+                setOcorrencias([]); // Limpa em caso de erro para o mapa carregar vazio
             });
     }, []);
 
@@ -82,7 +82,7 @@ function Mapa() {
                     attribution='&copy; OpenStreetMap contributors'
                 />
                 
-                {denuncias.map(d => (
+                {ocorrencias.map(d => (
                     <Marker 
                         key={d.id} 
                         position={[d.lat, d.lng]} 

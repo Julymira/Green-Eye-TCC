@@ -8,7 +8,7 @@ const router = express.Router();
 
 const { verifyToken } = require('./auth');
 
-// Somente usuários logados podem ver a lista de denúncias
+// Somente usuários logados podem ver a lista de ocorrências
 router.get('/reports', verifyToken, async (req, res) => {
     // Se chegou aqui, é porque o Token é válido!
     // Você pode até verificar se o usuário é admin:

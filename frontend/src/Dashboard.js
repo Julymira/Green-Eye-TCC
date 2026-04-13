@@ -34,21 +34,21 @@ function MapController({ coords }) {
 }
 
 function Dashboard() {
-    const [denuncias, setDenuncias] = useState([]);
+    const [ocorrencias, setOcorrencias] = useState([]);
     const [stats, setStats] = useState({ total: 0, novas: 0, verificacao: 0, resolvidas: 0 });
     const [focoMapa, setFocoMapa] = useState(null);
     const navigate = useNavigate();
 
     // --- NOVA LÓGICA DE CORES (STATUS) ---
-    const getIcon = (denuncia) => {
+    const getIcon = (ocorrencia) => {
         let iconUrl;
         
         // 1. Resolvida = VERDE
-        if (denuncia.status === 'Resolvida') {
+        if (ocorrencia.status === 'Resolvida') {
             iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png';
         } 
         // 2. Em verificação = AMARELO (GOLD)
-        else if (denuncia.status === 'Em verificação') {
+        else if (ocorrencia.status === 'Em verificação') {
             iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-gold.png';
         } 
         // 3. Nova = VERMELHO (Padrão para urgência)
@@ -69,7 +69,7 @@ function Dashboard() {
         fetch('/api/reports') 
             .then(res => res.json())
             .then(data => {
-                setDenuncias(data);
+                setOcorrencias(data);
                 calcularEstatisticas(data);
             })
             .catch(err => console.error("Erro:", err));
@@ -128,13 +128,13 @@ function Dashboard() {
             });
             
             if (Array.isArray(res.data)) {
-                setDenuncias(res.data);
+                setOcorrencias(res.data);
             } else {
-                setDenuncias([]); 
+                setOcorrencias([]); 
             }
         } catch (err) {
             console.error("Erro ao carregar dashboard:", err);
-            setDenuncias([]);
+            setOcorrencias([]);
         }
     };
 
@@ -197,7 +197,7 @@ function Dashboard() {
                                 />
                                 <MapController coords={focoMapa} />
 
-                                {denuncias.map(d => (
+                                {ocorrencias.map(d => (
                                     <Marker key={d.id} position={[d.lat, d.lng]} icon={getIcon(d)}>
                                         <Popup>
                                             <strong>#{d.id} - {d.tipo_lixo}</strong><br/>
@@ -220,7 +220,7 @@ function Dashboard() {
 
                     {/* COLUNA 2: TABELA */}
                     <div className="dashboard-card" style={{overflowX: 'auto'}}>
-                        <h3 style={{color: '#2e7d32', marginTop: 0}}>📋 Lista de Denúncias</h3>
+                        <h3 style={{color: '#2e7d32', marginTop: 0}}>📋 Lista de Ocorrências</h3>
                         <table style={tableStyle}>
                             <thead>
                                 <tr>
@@ -232,7 +232,7 @@ function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {denuncias.map(d => (
+                                {ocorrencias.map(d => (
                                     <tr key={d.id} style={{background: d.status === 'Resolvida' ? '#f9f9f9' : 'white'}}>
                                         <td style={tdStyle}>#{d.id}</td>
                                         <td style={tdStyle}>

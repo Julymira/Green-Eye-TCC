@@ -1,4 +1,4 @@
-// src/NovaDenuncia.js
+// src/NovaOcorrencia.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
@@ -33,7 +33,7 @@ function LocationMarker({ setPosicao }) {
     return position === null ? null : <Marker position={position} />;
 }
 
-function NovaDenuncia() {
+function NovaOcorrencia() {
     const navigate = useNavigate();
     const [fileName, setFileName] = useState('Nenhum arquivo escolhido');
     
@@ -78,7 +78,7 @@ function NovaDenuncia() {
             });
 
             if (response.ok) {
-                alert("✅ Denúncia enviada com sucesso!");
+                alert("✅ Ocorrência enviada com sucesso!");
                 navigate('/');
             } else {
                 const erroTexto = await response.text();
@@ -92,16 +92,16 @@ function NovaDenuncia() {
     };
 
     return (
-        <div className="denuncia-container">
+        <div className="ocorrencia-container">
             {/* Título da Página com margem ajustada */}
             <h2 style={{color: '#2e7d32', textAlign: 'center', marginBottom: '20px', marginTop: '20px'}}>
-                📢 Cadastrar Nova Denúncia
+                📢 Cadastrar Nova Ocorrência
             </h2>
             
-            <form onSubmit={handleSubmit} className="denuncia-grid">
+            <form onSubmit={handleSubmit} className="ocorrencia-grid">
                 
                 {/* COLUNA 1: MAPA (ESQUERDA) */}
-                <div className="denuncia-card map-column">
+                <div className="ocorrencia-card map-column">
                     {/* AJUSTE AQUI: Margem inferior pequena (5px) */}
                     <h3 style={{marginTop: 0, marginBottom: '5px', color: '#2e7d32'}}>1. Localização</h3>
                     
@@ -134,7 +134,7 @@ function NovaDenuncia() {
                 </div>
 
                 {/* COLUNA 2: DADOS (DIREITA) */}
-                <div className="denuncia-card">
+                <div className="ocorrencia-card">
                     {/* AJUSTE AQUI: Margem inferior padrão para alinhar visualmente */}
                     <h3 style={{marginTop: 0, marginBottom: '15px', color: '#2e7d32'}}>2. Detalhes da Ocorrência</h3>
 
@@ -188,7 +188,7 @@ function NovaDenuncia() {
                     </div>
 
                     <button type="submit" className="btn-submit" style={{marginTop: '20px'}}>
-                        🚀 Enviar Denúncia
+                        🚀 Enviar Ocorrência
                     </button>
                 </div>
 
@@ -197,4 +197,4 @@ function NovaDenuncia() {
     );
 }
 
-export default NovaDenuncia;
+export default NovaOcorrencia;

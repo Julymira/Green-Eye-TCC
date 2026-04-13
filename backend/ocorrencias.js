@@ -30,17 +30,17 @@ router.post('/', async (req, res) => {
         await client.query('BEGIN');
 
         // 1. Inserir na tabela reports (SEM a coluna tipo_lixo)
-        const novaDenunciaQuery = `
+        const novaOcorrenciaQuery = `
             INSERT INTO reports (
-                lat, lng, descricao_adicional, 
-                quantidade, problemas_causados, 
+                lat, lng, descricao_adicional,
+                quantidade, problemas_causados,
                 photo_url, status
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7)
-            RETURNING id; 
-        `; 
-        
-        const resReport = await client.query(novaDenunciaQuery, [
+            RETURNING id;
+        `;
+
+        const resReport = await client.query(novaOcorrenciaQuery, [
             lat, lng, descricao_adicional, 
             quantidade, problemas_causados, 
             null, 'Nova'
@@ -55,12 +55,12 @@ router.post('/', async (req, res) => {
         );
 
         await client.query('COMMIT');
-        res.status(201).json({ id: reportId, message: "Denúncia criada com sucesso!" });
+        res.status(201).json({ id: reportId, message: "Ocorrência criada com sucesso!" });
 
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error("Erro ao criar denúncia:", err.message);
-        res.status(500).json({ error: 'Erro no servidor ao tentar criar denúncia.' });
+        console.error("Erro ao criar ocorrência:", err.message);
+        res.status(500).json({ error: 'Erro no servidor ao tentar criar ocorrência.' });
     } finally {
         client.release();
     }
@@ -128,13 +128,13 @@ router.put('/:id', async (req, res) => {
         const result = await pool.query(query, [status, id]);
         
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Denúncia não encontrada' });
+            return res.status(404).json({ error: 'Ocorrência não encontrada' });
         }
         
         res.json(result.rows);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Erro ao atualizar denúncia.');
+        res.status(500).send('Erro ao atualizar ocorrência.');
     }
 });
 

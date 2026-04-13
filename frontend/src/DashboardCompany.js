@@ -93,7 +93,7 @@ function DashboardCompany() {
     return (
         <div>
             {/* NAVBAR PADRONIZADA */}
-            <nav className="navbar" style={{ background: '#2e7d32' }}>
+            <nav className="navbar" >
                 <div className="brand" style={{ color: 'white', fontSize: '20px', fontWeight: 'bold' }}>
                     🏢 Painel da Empresa: {companyInfo?.nome_fantasia}
                 </div>

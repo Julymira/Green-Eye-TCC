@@ -118,7 +118,7 @@ function LoginCompany() {
                         ℹ️ Instruções de acesso:
                     </h4>
                     <ul style={infoListStyle}>
-                        <li>♻️ Visualize denúncias de acordo com sua especialidade [cite: 700]</li>
+                        <li>♻️ Visualize ocorrências de acordo com sua especialidade</li>
                         <li>📅 Gerencie o status das coletas em Luziânia [cite: 106, 695]</li>
                         <li>🔒 Mantenha suas credenciais em segurança </li>
                     </ul>

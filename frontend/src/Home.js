@@ -12,7 +12,7 @@ function Home() {
         <p>
           O <strong>Green Eye</strong> é um sistema de monitoramento ambiental criado para identificar 
           e combater o descarte irregular de lixo em Luziânia-GO. Nossa missão é ajudar a manter a cidade
-           limpa, saudável e sustentável. Por meio de geolocalização e denúncias comunitárias, 
+           limpa, saudável e sustentável. Por meio de geolocalização e ocorrências comunitárias,
            queremos mapear os pontos críticos e auxiliar o poder público na solução desse problema.
         </p>
       </section>
@@ -30,14 +30,14 @@ function Home() {
           {/* CARD 1: Denunciar */}
           <div className="card-action">
             <div>
-              <h3>📌 1. Cadastrar Denúncia</h3>
+              <h3>📌 1. Cadastrar Ocorrência</h3>
               <p>
                 Identificou um local com lixo descartado de forma irregular? 
                 Clique abaixo para marcar o local e descrever o problema.
               </p>
             </div>
             {/* Botão Verde */}
-            <Link to="/denunciar" className="btn-card bg-green">Cadastrar Denúncia</Link>
+            <Link to="/ocorrencia" className="btn-card bg-green">Cadastrar Ocorrência</Link>
           </div>
 
           {/* CARD 2: Empresa */}
@@ -58,7 +58,7 @@ function Home() {
             <div>
               <h3>🛡️ 3. Área Administrativa</h3>
               <p>
-                Acesso restrito para administradores. Valide denúncias, 
+                Acesso restrito para administradores. Valide ocorrências,
                 gerencie dados e acompanhe as estatísticas da cidade.
               </p>
             </div>
