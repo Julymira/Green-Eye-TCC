@@ -42,18 +42,18 @@ function App() {
           
           {/* GRUPO 1: Páginas Públicas (Usam o Layout com Navbar "Green Eye") */}
           <Route element={<LayoutPublico />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/denunciar" element={<NovaDenuncia />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/cadastro-empresa" element={<RegisterCompany />} />
-            <Route path="/login-empresa" element={<LoginCompany />} />
-            <Route path="/dashboard-empresa" element={<DashboardCompany />} />
-            <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/denunciar" element={<NovaDenuncia />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/cadastro-empresa" element={<RegisterCompany />} />
+          <Route path="/login-empresa" element={<LoginCompany />} />
+          <Route path="/change-password" element={<ChangePassword />} />
             
           </Route>
 
           {/* GRUPO 2: Área Admin (Sem Layout padrão, usa a própria Navbar) */}
           <Route path="/admin" element={<Dashboard />} />
+          <Route path="/dashboard-empresa" element={<DashboardCompany />} />
 
         </Routes>
       </div>

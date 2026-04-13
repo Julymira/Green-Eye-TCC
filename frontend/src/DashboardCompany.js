@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -6,7 +6,7 @@ import axios from 'axios';
 import L from 'leaflet';
 
 // --- ÍCONES DO MAPA ---
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+//import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 // --- COMPONENTE PARA MOVER O MAPA ---
 function MapController({ coords }) {
@@ -35,7 +35,7 @@ function DashboardCompany() {
     shadowSize: [41, 41]
 });
 
-    const carregarDados = async () => {
+    const carregarDados = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -46,18 +46,18 @@ function DashboardCompany() {
             const res = await axios.get('http://localhost:3000/api/companies/my-matches', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             setReports(res.data.reports || []);
             setCompanyInfo(res.data.company);
         } catch (err) {
             console.error("Erro ao carregar dashboard da empresa", err);
             if (err.response?.status === 401) navigate('/');
         }
-    };
+    }, [navigate]);
 
     useEffect(() => {
         carregarDados();
-    }, [navigate]);
+    }, [carregarDados]);
 
     const handleLogout = () => {
         localStorage.clear();
@@ -97,7 +97,7 @@ function DashboardCompany() {
                 <div className="brand" style={{ color: 'white', fontSize: '20px', fontWeight: 'bold' }}>
                     🏢 Painel da Empresa: {companyInfo?.nome_fantasia}
                 </div>
-                <button onClick={handleLogout} className="btn-logout" style={{ background: 'white', color: '#2e7d32', border: 'none', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
+                <button onClick={handleLogout} className="btn-logout" style={{ background: 'white', color: '#c62828', border: 'none', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
                     Sair (Logout)
                 </button>
             </nav>
