@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
             null, 'Nova'
         ]);
 
-        const reportId = resReport.rows.id;
+        const reportId = resReport.rows[0].id;
 
         // 2. Vincular a categoria na tabela intermediária
         await client.query(
