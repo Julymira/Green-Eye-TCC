@@ -21,6 +21,11 @@ router.post('/', upload.single('foto'), async (req, res) => {
             lng
         } = req.body;
 
+        // Bug 1 fix: validar antes de converter
+        if (!lat || !lng || !categorias) {
+            return res.status(400).json({ error: 'Localização e Tipo de Resíduo são obrigatórios.' });
+        }
+
         // Multer retorna string se vier um valor, array se vier múltiplos
         const categoriasArray = Array.isArray(categorias)
             ? categorias.map(Number)
@@ -30,10 +35,6 @@ router.post('/', upload.single('foto'), async (req, res) => {
         const extensao = req.file
             ? req.file.originalname.split('.').pop().toLowerCase()
             : null;
-
-        if (!lat || !lng || !categorias) {
-            return res.status(400).json({ error: 'Localização e Tipo de Resíduo são obrigatórios.' });
-        }
 
         await client.query('BEGIN');
 
@@ -89,7 +90,7 @@ router.get('/', async (req, res) => {
         let query = `
             SELECT
                 r.id, r.lat, r.lng, r.quantidade, r.status, r.created_at, r.descricao_adicional,
-                STRING_AGG(c.nome, ', ' ORDER BY c.nome) as tipo_lixo
+                COALESCE(STRING_AGG(c.nome, ', ' ORDER BY c.nome), 'Sem categoria') as tipo_lixo
             FROM reports r
             LEFT JOIN report_categories rc ON r.id = rc.report_id
             LEFT JOIN categories c ON rc.category_id = c.id
@@ -103,8 +104,8 @@ router.get('/', async (req, res) => {
 
         if (status) {
             const statusArray = status.split(',');
-            condicoes.push(`r.status = ANY($${params.length + 1})`);
             params.push(statusArray);
+            condicoes.push(`r.status = ANY($${params.length})`);
         }
 
         if (condicoes.length > 0) {
