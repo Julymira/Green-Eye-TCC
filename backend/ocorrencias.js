@@ -85,20 +85,20 @@ router.get('/', async (req, res) => {
     try {
         const { status } = req.query;
         
-        // Query com JOIN para pegar o nome da categoria
+        // Query com JOIN e STRING_AGG para agrupar categorias numa única linha
         let query = `
-            SELECT 
+            SELECT
                 r.id, r.lat, r.lng, r.quantidade, r.status, r.created_at, r.descricao_adicional,
-                c.nome as tipo_lixo -- Aqui pegamos o nome da tabela categorias
+                STRING_AGG(c.nome, ', ' ORDER BY c.nome) as tipo_lixo
             FROM reports r
             LEFT JOIN report_categories rc ON r.id = rc.report_id
             LEFT JOIN categories c ON rc.category_id = c.id
         `;
-        
+
         let condicoes = [
             "(r.status != 'Resolvida' OR (r.status = 'Resolvida' AND r.updated_at > NOW() - INTERVAL '24 HOURS'))"
         ];
-        
+
         let params = [];
 
         if (status) {
@@ -110,7 +110,8 @@ router.get('/', async (req, res) => {
         if (condicoes.length > 0) {
             query += " WHERE " + condicoes.join(" AND ");
         }
-        
+
+        query += " GROUP BY r.id, r.lat, r.lng, r.quantidade, r.status, r.created_at, r.descricao_adicional";
         query += " ORDER BY r.created_at DESC";
         
         const result = await pool.query(query, params);
