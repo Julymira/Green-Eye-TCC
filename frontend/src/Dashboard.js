@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.heat';
 import axios from 'axios';
 import L from 'leaflet';
 
@@ -27,9 +28,32 @@ function MapController({ coords }) {
     const map = useMap();
     useEffect(() => {
         if (coords) {
-            map.flyTo(coords, 16, { duration: 1.5 }); 
+            map.flyTo(coords, 16, { duration: 1.5 });
         }
     }, [coords, map]);
+    return null;
+}
+
+// --- COMPONENTE DE HEATMAP ---
+const pesoQuantidade = { 'Pequena': 1, 'Média': 2, 'Grande': 3 };
+
+function HeatmapLayer({ ocorrencias }) {
+    const map = useMap();
+    useEffect(() => {
+        const pontos = ocorrencias.map(d => [
+            parseFloat(d.lat),
+            parseFloat(d.lng),
+            pesoQuantidade[d.quantidade] || 1
+        ]);
+        const heat = L.heatLayer(pontos, {
+            radius: 25,
+            blur: 25,
+            maxZoom: 17,
+            max: 3,
+            gradient: { 0.3: 'blue', 0.5: 'lime', 0.7: 'yellow', 1.0: 'red' }
+        }).addTo(map);
+        return () => { map.removeLayer(heat); };
+    }, [map, ocorrencias]);
     return null;
 }
 
@@ -38,6 +62,7 @@ function Dashboard() {
     const [stats, setStats] = useState({ total: 0, novas: 0, verificacao: 0, resolvidas: 0 });
     const [focoMapa, setFocoMapa] = useState(null);
     const [ocorrenciaSelecionada, setOcorrenciaSelecionada] = useState(null);
+    const [heatmapAtivo, setHeatmapAtivo] = useState(false);
     const navigate = useNavigate();
 
     // --- NOVA LÓGICA DE CORES (STATUS) ---
@@ -181,8 +206,21 @@ function Dashboard() {
                     
                     {/* COLUNA 1: MAPA */}
                     <div className="dashboard-card" id="mapa-admin">
-                        <h3 style={{color: '#2e7d32', marginTop: 0}}>📍 Mapa de Ocorrências</h3>
-                        
+                        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px'}}>
+                            <h3 style={{color: '#2e7d32', margin: 0}}>📍 Mapa de Ocorrências</h3>
+                            <button
+                                onClick={() => setHeatmapAtivo(prev => !prev)}
+                                style={{
+                                    padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold',
+                                    border: heatmapAtivo ? 'none' : '1px solid #2e7d32',
+                                    background: heatmapAtivo ? '#e53935' : 'white',
+                                    color: heatmapAtivo ? 'white' : '#2e7d32'
+                                }}
+                            >
+                                🔥 {heatmapAtivo ? 'Desativar Heatmap' : 'Ativar Heatmap'}
+                            </button>
+                        </div>
+
                         <div style={{ height: '500px', width: '100%', borderRadius: '8px', overflow: 'hidden', position: 'relative' }}>
                             <MapContainer center={[-16.2531, -47.9503]} zoom={13} style={{ height: '100%', width: '100%' }}>
                                 <TileLayer
@@ -191,23 +229,38 @@ function Dashboard() {
                                 />
                                 <MapController coords={focoMapa} />
 
-                                {ocorrencias.map(d => (
-                                    <Marker key={d.id} position={[d.lat, d.lng]} icon={getIcon(d)}>
-                                        <Popup>
-                                            <strong>#{d.id} - {d.tipo_lixo}</strong><br/>
-                                            Status: {d.status}<br/>
-                                            Qtd: {d.quantidade}
-                                        </Popup>
-                                    </Marker>
-                                ))}
+                                {heatmapAtivo ? (
+                                    <HeatmapLayer ocorrencias={ocorrencias} />
+                                ) : (
+                                    ocorrencias.map(d => (
+                                        <Marker key={d.id} position={[d.lat, d.lng]} icon={getIcon(d)}>
+                                            <Popup>
+                                                <strong>#{d.id} - {d.tipo_lixo}</strong><br/>
+                                                Status: {d.status}<br/>
+                                                Qtd: {d.quantidade}
+                                            </Popup>
+                                        </Marker>
+                                    ))
+                                )}
                             </MapContainer>
 
-                            {/* --- NOVA LEGENDA DE STATUS --- */}
+                            {/* LEGENDA: muda conforme o modo ativo */}
                             <div className="map-legend">
-                                <strong style={{display:'block', marginBottom:'5px'}}>Legenda (Status)</strong>
-                                <div><span className="dot red"></span> Nova</div>
-                                <div><span className="dot yellow"></span> Em Verificação</div>
-                                <div><span className="dot green"></span> Resolvida</div>
+                                {heatmapAtivo ? (
+                                    <>
+                                        <strong style={{display:'block', marginBottom:'5px'}}>Legenda (Calor)</strong>
+                                        <div><span className="dot blue"></span> Baixa concentração</div>
+                                        <div><span className="dot yellow"></span> Média concentração</div>
+                                        <div><span className="dot red"></span> Alta concentração</div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <strong style={{display:'block', marginBottom:'5px'}}>Legenda (Status)</strong>
+                                        <div><span className="dot red"></span> Nova</div>
+                                        <div><span className="dot yellow"></span> Em Verificação</div>
+                                        <div><span className="dot green"></span> Resolvida</div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
