@@ -1,5 +1,5 @@
 // src/Dashboard.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -65,16 +65,6 @@ function Dashboard() {
         });
     };
 
-    const carregarDados = () => {
-        fetch('/api/reports') 
-            .then(res => res.json())
-            .then(data => {
-                setOcorrencias(data);
-                calcularEstatisticas(data);
-            })
-            .catch(err => console.error("Erro:", err));
-    };
-
     const calcularEstatisticas = (dados) => {
         const s = { total: dados.length, novas: 0, verificacao: 0, resolvidas: 0 };
         dados.forEach(d => {
@@ -84,6 +74,24 @@ function Dashboard() {
         });
         setStats(s);
     };
+
+    const carregarDados = useCallback(async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await axios.get('http://localhost:3000/api/reports', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (Array.isArray(res.data)) {
+                setOcorrencias(res.data);
+                calcularEstatisticas(res.data);
+            } else {
+                setOcorrencias([]);
+            }
+        } catch (err) {
+            console.error("Erro ao carregar dashboard:", err);
+            setOcorrencias([]);
+        }
+    }, []);
 
     const atualizarStatus = (id, novoStatus) => {
         if (!window.confirm(`Mudar status para "${novoStatus}"?`)) return;
@@ -104,42 +112,22 @@ function Dashboard() {
     };
 
     useEffect(() => {
-    // 🚩 1. A TRAVA DE SEGURANÇA
-    const needsChange = localStorage.getItem('needsPasswordChange');
-    const token = localStorage.getItem('token');
+        const needsChange = localStorage.getItem('needsPasswordChange');
+        const token = localStorage.getItem('token');
 
-    // Se não tem token ou se a senha ainda é temporária, tira o usuário daqui
-    if (!token) {
-        navigate('/');
-        return;
-    }
-
-    if (needsChange === 'true') {
-        alert("⚠️ Redefinição de senha obrigatória!");
-        navigate('/change-password');
-        return; // O 'return' impede que o código abaixo seja executado
-    }
-
-    // 2. CARREGAMENTO DOS DADOS (Só acontece se passar na trava acima)
-    const carregarDados = async () => {
-        try {
-            const res = await axios.get('http://localhost:3000/api/reports', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            if (Array.isArray(res.data)) {
-                setOcorrencias(res.data);
-            } else {
-                setOcorrencias([]); 
-            }
-        } catch (err) {
-            console.error("Erro ao carregar dashboard:", err);
-            setOcorrencias([]);
+        if (!token) {
+            navigate('/');
+            return;
         }
-    };
 
-    carregarDados();
-}, [navigate]); 
+        if (needsChange === 'true') {
+            alert("⚠️ Redefinição de senha obrigatória!");
+            navigate('/change-password');
+            return;
+        }
+
+        carregarDados();
+    }, [navigate, carregarDados]);
 
     const handleLogout = () => {
     // Limpa o Local Storage
