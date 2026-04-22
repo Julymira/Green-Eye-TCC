@@ -37,6 +37,7 @@ function Dashboard() {
     const [ocorrencias, setOcorrencias] = useState([]);
     const [stats, setStats] = useState({ total: 0, novas: 0, verificacao: 0, resolvidas: 0 });
     const [focoMapa, setFocoMapa] = useState(null);
+    const [ocorrenciaSelecionada, setOcorrenciaSelecionada] = useState(null);
     const navigate = useNavigate();
 
     // --- NOVA LÓGICA DE CORES (STATUS) ---
@@ -109,6 +110,11 @@ function Dashboard() {
     const focarNoMapa = (lat, lng) => {
         setFocoMapa([lat, lng]);
         document.getElementById('mapa-admin').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const abrirDetalhes = (ocorrencia) => {
+        setOcorrenciaSelecionada(ocorrencia);
+        focarNoMapa(ocorrencia.lat, ocorrencia.lng);
     };
 
     useEffect(() => {
@@ -206,66 +212,151 @@ function Dashboard() {
                         </div>
                     </div>
 
-                    {/* COLUNA 2: TABELA */}
-                    <div className="dashboard-card" style={{overflowX: 'auto'}}>
-                        <h3 style={{color: '#2e7d32', marginTop: 0}}>📋 Lista de Ocorrências</h3>
-                        <table style={tableStyle}>
-                            <thead>
-                                <tr>
-                                    <th style={thStyle}>ID</th>
-                                    <th style={thStyle}>Data</th>
-                                    <th style={thStyle}>Tipo</th>
-                                    <th style={thStyle}>Status</th>
-                                    <th style={thStyle}>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {ocorrencias.map(d => (
-                                    <tr key={d.id} style={{background: d.status === 'Resolvida' ? '#f9f9f9' : 'white'}}>
-                                        <td style={tdStyle}>#{d.id}</td>
-                                        <td style={tdStyle}>
-                                            {new Date(d.created_at).toLocaleDateString('pt-BR')} <br/>
-                                            <small>{new Date(d.created_at).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</small>
-                                        </td>
-                                        <td style={tdStyle}>
-                                            <strong>{d.tipo_lixo}</strong><br/>
-                                            <small>{d.quantidade}</small>
-                                        </td>
-                                        <td style={tdStyle}>
-                                            <span style={{
-                                                padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold',
-                                                background: d.status === 'Nova' ? '#ffebee' : d.status === 'Resolvida' ? '#e8f5e9' : '#fff3e0',
-                                                color: d.status === 'Nova' ? '#c62828' : d.status === 'Resolvida' ? '#2e7d32' : '#e65100'
-                                            }}>
-                                                {d.status}
-                                            </span>
-                                        </td>
-                                        <td style={tdStyle}>
-                                            <div style={{display: 'flex', gap: '5px', flexWrap: 'wrap'}}>
-                                                <button 
-                                                    onClick={() => focarNoMapa(d.lat, d.lng)} 
-                                                    style={{ cursor: 'pointer', padding: '5px 8px', border: '1px solid #2196f3', borderRadius: '4px', background: 'white', color: '#2196f3', fontWeight: 'bold', fontSize: '11px' }}
-                                                    title="Ver no mapa"
-                                                >
-                                                    📍 Ver
+                    {/* COLUNA 2: TABELA ou DETALHES */}
+                    <div className="dashboard-card" style={{overflowX: ocorrenciaSelecionada ? 'visible' : 'auto'}}>
+                        {!ocorrenciaSelecionada ? (
+                            <>
+                                <h3 style={{color: '#2e7d32', marginTop: 0}}>📋 Lista de Ocorrências</h3>
+                                <table style={tableStyle}>
+                                    <thead>
+                                        <tr>
+                                            <th style={thStyle}>ID</th>
+                                            <th style={thStyle}>Data</th>
+                                            <th style={thStyle}>Tipo</th>
+                                            <th style={thStyle}>Status</th>
+                                            <th style={thStyle}>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {ocorrencias.map(d => (
+                                            <tr key={d.id} style={{background: d.status === 'Resolvida' ? '#f9f9f9' : 'white'}}>
+                                                <td style={tdStyle}>#{d.id}</td>
+                                                <td style={tdStyle}>
+                                                    {new Date(d.created_at).toLocaleDateString('pt-BR')} <br/>
+                                                    <small>{new Date(d.created_at).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</small>
+                                                </td>
+                                                <td style={tdStyle}>
+                                                    <strong>{d.tipo_lixo}</strong><br/>
+                                                    <small>{d.quantidade}</small>
+                                                </td>
+                                                <td style={tdStyle}>
+                                                    <span style={{
+                                                        padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold',
+                                                        background: d.status === 'Nova' ? '#ffebee' : d.status === 'Resolvida' ? '#e8f5e9' : '#fff3e0',
+                                                        color: d.status === 'Nova' ? '#c62828' : d.status === 'Resolvida' ? '#2e7d32' : '#e65100'
+                                                    }}>
+                                                        {d.status}
+                                                    </span>
+                                                </td>
+                                                <td style={tdStyle}>
+                                                    <div style={{display: 'flex', gap: '5px', flexWrap: 'wrap'}}>
+                                                        <button
+                                                            onClick={() => abrirDetalhes(d)}
+                                                            style={{ cursor: 'pointer', padding: '5px 8px', border: '1px solid #2196f3', borderRadius: '4px', background: 'white', color: '#2196f3', fontWeight: 'bold', fontSize: '11px' }}
+                                                            title="Ver detalhes"
+                                                        >
+                                                            📍 Ver
+                                                        </button>
+                                                        {d.status === 'Nova' && (
+                                                            <button onClick={() => atualizarStatus(d.id, 'Em verificação')} style={{ cursor: 'pointer', padding: '5px 8px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff3e0', fontSize: '11px' }}>
+                                                                ⚠️ Verificar
+                                                            </button>
+                                                        )}
+                                                        {d.status === 'Em verificação' && (
+                                                            <button onClick={() => atualizarStatus(d.id, 'Resolvida')} style={{ cursor: 'pointer', background: '#43a047', color: 'white', border: 'none', padding: '5px 8px', borderRadius: '4px', fontSize: '11px' }}>
+                                                                ✅ Resolver
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </>
+                        ) : (
+                            <>
+                                {/* CABEÇALHO: voltar | título | botão de ação (canto superior direito) */}
+                                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px'}}>
+                                    <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                                        <button
+                                            onClick={() => setOcorrenciaSelecionada(null)}
+                                            style={{ background: 'none', border: '1px solid #ccc', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontSize: '16px', color: '#555' }}
+                                            title="Voltar para a lista"
+                                        >
+                                            ← Voltar
+                                        </button>
+                                        <h3 style={{color: '#2e7d32', margin: 0}}>📄 Ocorrência #{ocorrenciaSelecionada.id}</h3>
+                                        <span style={{
+                                            padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold',
+                                            background: ocorrenciaSelecionada.status === 'Nova' ? '#ffebee' : ocorrenciaSelecionada.status === 'Resolvida' ? '#e8f5e9' : '#fff3e0',
+                                            color: ocorrenciaSelecionada.status === 'Nova' ? '#c62828' : ocorrenciaSelecionada.status === 'Resolvida' ? '#2e7d32' : '#e65100'
+                                        }}>
+                                            {ocorrenciaSelecionada.status}
+                                        </span>
+                                        {/* BOTÃO DE AÇÃO NO CANTO SUPERIOR DIREITO */}
+                                        <div>
+                                            {ocorrenciaSelecionada.status === 'Nova' && (
+                                                <button onClick={() => { atualizarStatus(ocorrenciaSelecionada.id, 'Em verificação'); setOcorrenciaSelecionada(null); }} style={{ cursor: 'pointer', padding: '8px 14px', border: '1px solid #ccc', borderRadius: '6px', background: '#fff3e0', fontSize: '13px' }}>
+                                                    ⚠️ Marcar como Em Verificação
                                                 </button>
+                                            )}
+                                            {ocorrenciaSelecionada.status === 'Em verificação' && (
+                                                <button onClick={() => { atualizarStatus(ocorrenciaSelecionada.id, 'Resolvida'); setOcorrenciaSelecionada(null); }} style={{ cursor: 'pointer', background: '#43a047', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '6px', fontSize: '13px' }}>
+                                                    ✅ Marcar como Resolvida
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
 
-                                                {d.status === 'Nova' && (
-                                                    <button onClick={() => atualizarStatus(d.id, 'Em verificação')} style={{ cursor: 'pointer', padding: '5px 8px', border: '1px solid #ccc', borderRadius: '4px', background: '#fff3e0', fontSize: '11px' }}>
-                                                        ⚠️ Verificar
-                                                    </button>
-                                                )}
-                                                {d.status === 'Em verificação' && (
-                                                    <button onClick={() => atualizarStatus(d.id, 'Resolvida')} style={{ cursor: 'pointer', background: '#43a047', color: 'white', border: 'none', padding: '5px 8px', borderRadius: '4px', fontSize: '11px' }}>
-                                                        ✅ Resolver
-                                                    </button>
-                                                )}
+                                {/* CORPO: DUAS COLUNAS — informações | foto */}
+                                <div style={{display: 'flex', gap: '24px', alignItems: 'flex-start'}}>
+
+                                    {/* COLUNA ESQUERDA: INFORMAÇÕES */}
+                                    <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px', color: '#444'}}>
+                                        <div>
+                                            <strong style={{color: '#2e7d32'}}>🗓 Data:</strong><br/>
+                                            {new Date(ocorrenciaSelecionada.created_at).toLocaleDateString('pt-BR')} às {new Date(ocorrenciaSelecionada.created_at).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}
+                                        </div>
+                                        <div>
+                                            <strong style={{color: '#2e7d32'}}>♻️ Tipo de Resíduo:</strong><br/>
+                                            {ocorrenciaSelecionada.tipo_lixo}
+                                        </div>
+                                        <div>
+                                            <strong style={{color: '#2e7d32'}}>📦 Quantidade:</strong><br/>
+                                            {ocorrenciaSelecionada.quantidade}
+                                        </div>
+                                        <div>
+                                            <strong style={{color: '#2e7d32'}}>⚠️ Problemas Observados:</strong><br/>
+                                            {ocorrenciaSelecionada.problemas_causados || <em style={{color:'#999'}}>Não informado</em>}
+                                        </div>
+                                        <div>
+                                            <strong style={{color: '#2e7d32'}}>📝 Descrição Adicional:</strong><br/>
+                                            {ocorrenciaSelecionada.descricao_adicional || <em style={{color:'#999'}}>Não informado</em>}
+                                        </div>
+                                        <div>
+                                            <strong style={{color: '#2e7d32'}}>📍 Coordenadas:</strong><br/>
+                                            {Number(ocorrenciaSelecionada.lat).toFixed(5)}, {Number(ocorrenciaSelecionada.lng).toFixed(5)}
+                                        </div>
+                                    </div>
+
+                                    {/* COLUNA DIREITA: FOTO */}
+                                    {ocorrenciaSelecionada.has_photo && (
+                                        <div style={{flex: 1}}>
+                                            <strong style={{color: '#2e7d32', fontSize: '14px'}}>📷 Foto:</strong>
+                                            <div style={{marginTop: '8px'}}>
+                                                <img
+                                                    src={`/api/reports/${ocorrenciaSelecionada.id}/foto`}
+                                                    alt="Foto da ocorrência"
+                                                    style={{width: '100%', maxHeight: '320px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd'}}
+                                                />
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </div>
 
                 </div>

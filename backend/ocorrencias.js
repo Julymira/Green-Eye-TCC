@@ -90,6 +90,8 @@ router.get('/', async (req, res) => {
         let query = `
             SELECT
                 r.id, r.lat, r.lng, r.quantidade, r.status, r.created_at, r.descricao_adicional,
+                r.problemas_causados,
+                (r.photo_content IS NOT NULL) as has_photo,
                 COALESCE(STRING_AGG(c.nome, ', ' ORDER BY c.nome), 'Sem categoria') as tipo_lixo
             FROM reports r
             LEFT JOIN report_categories rc ON r.id = rc.report_id
@@ -112,7 +114,7 @@ router.get('/', async (req, res) => {
             query += " WHERE " + condicoes.join(" AND ");
         }
 
-        query += " GROUP BY r.id, r.lat, r.lng, r.quantidade, r.status, r.created_at, r.descricao_adicional";
+        query += " GROUP BY r.id, r.lat, r.lng, r.quantidade, r.status, r.created_at, r.descricao_adicional, r.problemas_causados";
         query += " ORDER BY r.created_at DESC";
         
         const result = await pool.query(query, params);
