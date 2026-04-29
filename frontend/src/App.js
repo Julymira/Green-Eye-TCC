@@ -1,7 +1,8 @@
 // src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Outlet } from 'react-router-dom';
-import './App.css'; 
+import { Toaster } from 'react-hot-toast';
+import './App.css';
 
 // Importando as páginas
 import Home from './Home';
@@ -37,6 +38,7 @@ function LayoutPublico() {
 function App() {
   return (
     <Router>
+      <Toaster position="top-center" toastOptions={{ duration: 4000 }} />
       <div className="App">
         <Routes>
           

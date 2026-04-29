@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
@@ -61,7 +62,7 @@ function DashboardCompany() {
 
     const handleLogout = () => {
         localStorage.clear();
-        alert("Você saiu do sistema.");
+        toast('Você saiu do sistema.');
         navigate('/');
     };
 
@@ -73,10 +74,10 @@ function DashboardCompany() {
             await axios.post(`http://localhost:3000/api/companies/assign/${reportId}`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            alert("✅ Coleta solicitada com sucesso!");
+            toast.success("Coleta solicitada com sucesso!");
             carregarDados(); // Recarrega para limpar o item que já foi "assinado"
         } catch (err) {
-            alert("❌ Erro ao solicitar coleta.");
+            toast.error("Erro ao solicitar coleta.");
         }
     };
 

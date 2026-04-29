@@ -1,6 +1,7 @@
 // src/NovaOcorrencia.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -84,12 +85,12 @@ function NovaOcorrencia() {
         e.preventDefault();
         
         if (!form.lat || !form.lng) {
-            alert("⚠️ Por favor, clique no mapa (lado esquerdo) para marcar o local!");
+            toast('Por favor, clique no mapa para marcar o local!', { icon: '⚠️' });
             return;
         }
 
         if (categoriasSelecionadas.length === 0) {
-            alert("⚠️ Selecione pelo menos um tipo de resíduo.");
+            toast('Selecione pelo menos um tipo de resíduo.', { icon: '⚠️' });
             return;
         }
 
@@ -109,16 +110,16 @@ function NovaOcorrencia() {
             });
 
             if (response.ok) {
-                alert("✅ Ocorrência enviada com sucesso!");
+                toast.success("Ocorrência enviada com sucesso!");
                 navigate('/');
             } else {
                 const erroTexto = await response.text();
                 console.error("Erro do servidor:", erroTexto);
-                alert(`Ocorreu um erro: ${response.status}\nDetalhe: ${erroTexto}`);
+                toast.error(`Erro ${response.status}: ${erroTexto}`);
             }
         } catch (error) {
             console.error("Erro de rede:", error);
-            alert("Erro ao conectar com o servidor. Verifique se o backend está rodando.");
+            toast.error("Erro ao conectar com o servidor. Verifique se o backend está rodando.");
         }
     };
 

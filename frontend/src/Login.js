@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 function Login() {
     const [cpf, setCpf] = useState('');
@@ -29,10 +30,10 @@ function Login() {
             localStorage.setItem('needsPasswordChange', String(response.data.user.needsPasswordChange));
 
             if (response.data.user.needsPasswordChange === true) {
-                alert('🚩 Atenção: Sua senha é temporária e precisa ser alterada agora.');
+                toast('Atenção: Sua senha é temporária e precisa ser alterada agora.', { icon: '🚩' });
                 navigate('/change-password');
             } else {
-                alert('✅ Login realizado!');
+                toast.success('Login realizado!');
                 navigate('/admin');
             }
         }
@@ -40,7 +41,7 @@ function Login() {
 
     } catch (error) {
         console.error(error);
-        alert('❌ Erro no login: ' + (error.response?.data?.error || 'Servidor offline'));
+        toast.error('Erro no login: ' + (error.response?.data?.error || 'Servidor offline'));
     }
 };
 

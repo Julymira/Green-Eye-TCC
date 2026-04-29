@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import './RegisterCompany.css'; 
 
 function RegisterCompany() {
@@ -45,17 +46,17 @@ function RegisterCompany() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (selectedCategories.length === 0) {
-            alert("❌ Selecione pelo menos uma categoria de coleta.");
+            toast.error("Selecione pelo menos uma categoria de coleta.");
             return;
         }
 
         try {
             const payload = { ...formData, categories: selectedCategories };
             await axios.post('http://localhost:3000/api/companies', payload);
-            alert("✅ Empresa cadastrada com sucesso!");
+            toast.success("Empresa cadastrada com sucesso!");
             navigate('/login');
         } catch (error) {
-            alert("❌ Erro ao cadastrar. Verifique se o CNPJ ou E-mail já existem.");
+            toast.error("Erro ao cadastrar. Verifique se o CNPJ ou E-mail já existem.");
         }
     };
 

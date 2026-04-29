@@ -1,6 +1,7 @@
 // src/Dashboard.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
@@ -152,7 +153,7 @@ function Dashboard() {
         }
 
         if (needsChange === 'true') {
-            alert("⚠️ Redefinição de senha obrigatória!");
+            toast('Redefinição de senha obrigatória!', { icon: '⚠️' });
             navigate('/change-password');
             return;
         }
@@ -163,7 +164,7 @@ function Dashboard() {
     const handleLogout = () => {
     // Limpa o Local Storage
     localStorage.clear(); 
-    alert("Você saiu do sistema.");
+    toast('Você saiu do sistema.');
     navigate('/'); // Volta para a Home
     };
 

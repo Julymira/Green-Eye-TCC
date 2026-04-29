@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 function LoginCompany() {
     const [cnpj, setCnpj] = useState(''); 
@@ -23,12 +24,12 @@ function LoginCompany() {
             // Dica: Salve o nome da empresa para mostrar no Dashboard
             localStorage.setItem('userName', response.data.user.nome); 
             
-            alert(`✅ Bem-vinda, ${response.data.user.nome}!`);
+            toast.success(`Bem-vinda, ${response.data.user.nome}!`);
             navigate('/dashboard-empresa');
         }
     } catch (error) {
         // Mostra o erro real que vem do backend (ex: CNPJ ou senha incorretos)
-        alert('❌ ' + (error.response?.data?.error || 'Erro ao conectar com o servidor'));
+        toast.error(error.response?.data?.error || 'Erro ao conectar com o servidor');
     }
 };
 
