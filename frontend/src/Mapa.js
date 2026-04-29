@@ -34,10 +34,10 @@ function Mapa() {
             const qtd = (ocorrencia.quantidade || '').toLowerCase();
             if (qtd.includes('alto') || qtd.includes('grande')) {
                 iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png';
-            } else if (qtd.includes('médio') || qtd.includes('media')) {
+            } else if (qtd.includes('médio') || qtd.includes('média') || qtd.includes('media')) {
                 iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png';
             } else {
-                iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-gold.png';
+                iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png';
             }
         }
 
@@ -102,7 +102,7 @@ function Mapa() {
             <div className="map-legend">
                 <strong>Legenda</strong>
                 <div><span className="dot green"></span> Resolvido</div>
-                <div><span className="dot yellow"></span> Nível Baixo</div>
+                <div><span className="dot blue"></span> Nível Baixo</div>
                 <div><span className="dot orange"></span> Nível Médio</div>
                 <div><span className="dot red"></span> Nível Alto</div>
             </div>
