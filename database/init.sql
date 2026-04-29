@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS public.reports (
     
     -- Controle de Status
     status VARCHAR(50) DEFAULT 'Nova',
+    empresa_selecionada BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
@@ -64,6 +65,19 @@ CREATE TABLE IF NOT EXISTS public.reports (
 );
 
 -- 6. TABELAS INTERMEDIÁRIAS (N:N - Muitos para Muitos)
+
+-- Solicitações de coleta feitas por empresas
+CREATE TABLE IF NOT EXISTS public.collection_requests (
+    id           SERIAL PRIMARY KEY,
+    report_id    INTEGER REFERENCES public.reports(id) ON DELETE CASCADE,
+    company_id   INTEGER REFERENCES public.companies(id) ON DELETE CASCADE,
+    status       VARCHAR(20) DEFAULT 'Pendente', -- 'Pendente', 'Aprovada', 'Negada', 'Coletada'
+    prazo        TIMESTAMP,
+    coletado_em  TIMESTAMP,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_request_per_company UNIQUE (report_id, company_id)
+);
+
 -- Normalização: Permite múltiplas categorias para uma denúncia e para uma empresa
 
 -- Relaciona Denúncias com Categorias

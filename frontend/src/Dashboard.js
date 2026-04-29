@@ -63,6 +63,8 @@ function Dashboard() {
     const [stats, setStats] = useState({ total: 0, novas: 0, verificacao: 0, resolvidas: 0 });
     const [focoMapa, setFocoMapa] = useState(null);
     const [ocorrenciaSelecionada, setOcorrenciaSelecionada] = useState(null);
+    const [solicitacoes, setSolicitacoes] = useState([]);
+    const [prazoInput, setPrazoInput] = useState('');
     const [heatmapAtivo, setHeatmapAtivo] = useState(false);
     const navigate = useNavigate();
 
@@ -138,9 +140,75 @@ function Dashboard() {
         document.getElementById('mapa-admin').scrollIntoView({ behavior: 'smooth' });
     };
 
-    const abrirDetalhes = (ocorrencia) => {
+    const abrirDetalhes = async (ocorrencia) => {
         setOcorrenciaSelecionada(ocorrencia);
+        setSolicitacoes([]);
         focarNoMapa(ocorrencia.lat, ocorrencia.lng);
+        const token = localStorage.getItem('token');
+        try {
+            const res = await axios.get(`http://localhost:3000/api/reports/${ocorrencia.id}/requests`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setSolicitacoes(res.data);
+        } catch (err) {
+            console.error("Erro ao buscar solicitações:", err);
+        }
+    };
+
+    const handleAprovar = async (requestId) => {
+        if (!prazoInput) {
+            toast('Defina um prazo antes de aprovar.', { icon: '⚠️' });
+            return;
+        }
+        const token = localStorage.getItem('token');
+        try {
+            await axios.post(
+                `http://localhost:3000/api/reports/${ocorrenciaSelecionada.id}/requests/${requestId}/approve`,
+                { prazo: prazoInput },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            toast.success("Solicitação aprovada!");
+            abrirDetalhes(ocorrenciaSelecionada);
+            carregarDados();
+        } catch (err) {
+            if (err.response?.status === 409) {
+                toast(err.response.data.error, { icon: '⚠️' });
+            } else {
+                toast.error("Erro ao aprovar.");
+            }
+        }
+    };
+
+    const handleNegar = async (requestId) => {
+        const token = localStorage.getItem('token');
+        try {
+            await axios.post(
+                `http://localhost:3000/api/reports/${ocorrenciaSelecionada.id}/requests/${requestId}/deny`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            toast.success("Solicitação negada.");
+            abrirDetalhes(ocorrenciaSelecionada);
+            carregarDados();
+        } catch (err) {
+            toast.error("Erro ao negar.");
+        }
+    };
+
+    const handleLiberarColeta = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            await axios.put(
+                `http://localhost:3000/api/reports/${ocorrenciaSelecionada.id}`,
+                { empresa_selecionada: false },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            toast.success("Ocorrência liberada para novas solicitações.");
+            carregarDados();
+            setOcorrenciaSelecionada(null);
+        } catch (err) {
+            toast.error("Erro ao liberar ocorrência.");
+        }
     };
 
     useEffect(() => {
@@ -301,6 +369,9 @@ function Dashboard() {
                                                     }}>
                                                         {d.status}
                                                     </span>
+                                                    {parseInt(d.solicitacoes_pendentes) > 0 && (
+                                                        <span title="Possui solicitações de coleta pendentes" style={{ marginLeft: '5px' }}>🛒</span>
+                                                    )}
                                                 </td>
                                                 <td style={tdStyle}>
                                                     <div style={{display: 'flex', gap: '5px', flexWrap: 'wrap'}}>
@@ -363,6 +434,57 @@ function Dashboard() {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* PAINEL DE SOLICITAÇÕES DE COLETA */}
+                                {solicitacoes.length > 0 && (
+                                    <div style={{ marginBottom: '20px', padding: '16px', background: '#f9f9f9', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+                                        <h4 style={{ margin: '0 0 12px 0', color: '#2e7d32', fontSize: '14px' }}>🛒 Solicitações de Coleta</h4>
+
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                                            <label style={{ fontSize: '13px', color: '#555' }}>Prazo para coleta:</label>
+                                            <input
+                                                type="date"
+                                                value={prazoInput}
+                                                onChange={e => setPrazoInput(e.target.value)}
+                                                style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                                            />
+                                        </div>
+
+                                        {(() => {
+                                            const jaTemAprovada = solicitacoes.some(s => s.status === 'Aprovada');
+                                            return solicitacoes.map(s => (
+                                                <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'white', borderRadius: '6px', border: '1px solid #eee', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                                                    <div style={{ fontSize: '13px', color: '#444' }}>
+                                                        <strong>{s.nome_fantasia}</strong>
+                                                        <span style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold',
+                                                            background: s.status === 'Pendente' ? '#fff3e0' : s.status === 'Aprovada' ? '#e8f5e9' : s.status === 'Coletada' ? '#e3f2fd' : '#ffebee',
+                                                            color: s.status === 'Pendente' ? '#e65100' : s.status === 'Aprovada' ? '#2e7d32' : s.status === 'Coletada' ? '#1565c0' : '#c62828'
+                                                        }}>{s.status}</span>
+                                                        {s.prazo && <span style={{ marginLeft: '8px', fontSize: '12px', color: '#888' }}>Prazo: {new Date(s.prazo).toLocaleDateString('pt-BR')}</span>}
+                                                        {s.coletado_em && <span style={{ marginLeft: '8px', fontSize: '12px', color: '#2e7d32' }}>✅ Coletado em {new Date(s.coletado_em).toLocaleDateString('pt-BR')}</span>}
+                                                    </div>
+                                                    {s.status === 'Pendente' && (
+                                                        <div style={{ display: 'flex', gap: '6px' }}>
+                                                            {!jaTemAprovada && (
+                                                                <button onClick={() => handleAprovar(s.id)} style={{ cursor: 'pointer', background: '#2e7d32', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '12px' }}>
+                                                                    ✅ Aprovar
+                                                                </button>
+                                                            )}
+                                                            <button onClick={() => handleNegar(s.id)} style={{ cursor: 'pointer', background: '#c62828', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '12px' }}>
+                                                                ❌ Negar
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                    {s.status === 'Coletada' && ocorrenciaSelecionada.empresa_selecionada && (
+                                                        <button onClick={handleLiberarColeta} style={{ cursor: 'pointer', background: '#1565c0', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '12px' }}>
+                                                            🔓 Liberar outros materiais
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ));
+                                        })()}
+                                    </div>
+                                )}
 
                                 {/* CORPO: DUAS COLUNAS — informações | foto */}
                                 <div style={{display: 'flex', gap: '24px', alignItems: 'flex-start'}}>
