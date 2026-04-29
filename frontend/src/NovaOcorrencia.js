@@ -41,6 +41,7 @@ function NovaOcorrencia() {
     const [foto, setFoto] = useState(null);
     const [categorias, setCategorias] = useState([]);
     const [categoriasSelecionadas, setCategoriasSelecionadas] = useState([]);
+    const [enviando, setEnviando] = useState(false);
 
     useEffect(() => {
         fetch('http://localhost:3000/api/companies/categories')
@@ -94,6 +95,7 @@ function NovaOcorrencia() {
             return;
         }
 
+        setEnviando(true);
         try {
             const formData = new FormData();
             categoriasSelecionadas.forEach(id => formData.append('categorias', id));
@@ -116,10 +118,12 @@ function NovaOcorrencia() {
                 const erroTexto = await response.text();
                 console.error("Erro do servidor:", erroTexto);
                 toast.error(`Erro ${response.status}: ${erroTexto}`);
+                setEnviando(false);
             }
         } catch (error) {
             console.error("Erro de rede:", error);
             toast.error("Erro ao conectar com o servidor. Verifique se o backend está rodando.");
+            setEnviando(false);
         }
     };
 
@@ -228,8 +232,8 @@ function NovaOcorrencia() {
                         <input type="file" id="foto" accept="image/*" onChange={handleFileChange} />
                     </div>
 
-                    <button type="submit" className="btn-submit" style={{marginTop: '20px'}}>
-                        🚀 Enviar Ocorrência
+                    <button type="submit" className="btn-submit" style={{marginTop: '20px'}} disabled={enviando}>
+                        {enviando ? '⏳ Enviando...' : '🚀 Enviar Ocorrência'}
                     </button>
                 </div>
 
