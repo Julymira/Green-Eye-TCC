@@ -102,8 +102,27 @@ function DashboardCompany() {
         navigate('/');
     };
 
+    const confirmar = (mensagem) => new Promise((resolve) => {
+        toast((t) => (
+            <div>
+                <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>{mensagem}</p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => { toast.dismiss(t.id); resolve(true); }}
+                        style={{ background: '#2e7d32', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
+                        Confirmar
+                    </button>
+                    <button onClick={() => { toast.dismiss(t.id); resolve(false); }}
+                        style={{ background: '#757575', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        ), { duration: Infinity });
+    });
+
     const handleSolicitarColeta = async (reportId) => {
-        if (!window.confirm("Deseja solicitar a coleta deste material?")) return;
+        const ok = await confirmar("Deseja solicitar a coleta deste material?");
+        if (!ok) return;
 
         try {
             const token = localStorage.getItem('token');
@@ -122,7 +141,8 @@ function DashboardCompany() {
     };
 
     const handleConfirmarColeta = async (requestId, reportId) => {
-        if (!window.confirm("Confirmar que o material foi recolhido?")) return;
+        const ok = await confirmar("Confirmar que o material foi recolhido?");
+        if (!ok) return;
         try {
             const token = localStorage.getItem('token');
             await axios.post(`http://localhost:3000/api/companies/requests/${requestId}/confirm`, {}, {
@@ -299,8 +319,8 @@ function DashboardCompany() {
                                     <h3 style={{ color: '#2e7d32', margin: 0 }}>📄 Ocorrência #{ocorrenciaSelecionada.id}</h3>
                                     <span style={{
                                         padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold',
-                                        background: ocorrenciaSelecionada.status === 'Nova' ? '#ffebee' : ocorrenciaSelecionada.status === 'Resolvida' ? '#e8f5e9' : '#fff3e0',
-                                        color: ocorrenciaSelecionada.status === 'Nova' ? '#c62828' : ocorrenciaSelecionada.status === 'Resolvida' ? '#2e7d32' : '#e65100'
+                                        background: ocorrenciaSelecionada.status === 'Nova' ? '#ffebee' : ocorrenciaSelecionada.status === 'Resolvida' ? '#e8f5e9' : ocorrenciaSelecionada.status === 'Cedido' ? '#e3f2fd' : ocorrenciaSelecionada.status === 'Revisão' ? '#f3e5f5' : '#fff3e0',
+                                        color: ocorrenciaSelecionada.status === 'Nova' ? '#c62828' : ocorrenciaSelecionada.status === 'Resolvida' ? '#2e7d32' : ocorrenciaSelecionada.status === 'Cedido' ? '#1565c0' : ocorrenciaSelecionada.status === 'Revisão' ? '#6a1b9a' : '#e65100'
                                     }}>
                                         {ocorrenciaSelecionada.status}
                                     </span>

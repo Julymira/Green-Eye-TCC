@@ -85,6 +85,27 @@ router.post('/', upload.single('foto'), async (req, res) => {
  */
 router.get('/', async (req, res) => {
     try {
+        // Reset automático: libera ocorrências cujo prazo aprovado expirou
+        await pool.query(`
+            UPDATE public.collection_requests
+            SET status = 'Expirada'
+            WHERE status = 'Aprovada' AND prazo IS NOT NULL AND prazo < NOW()
+        `);
+        await pool.query(`
+            UPDATE public.reports r
+            SET empresa_selecionada = false
+            WHERE empresa_selecionada = true
+              AND NOT EXISTS (
+                SELECT 1 FROM public.collection_requests cr
+                WHERE cr.report_id = r.id AND cr.status = 'Aprovada'
+              )
+        `);
+        await pool.query(`
+            UPDATE public.reports
+            SET status = 'Em verificação'
+            WHERE status = 'Cedido' AND empresa_selecionada = false
+        `);
+
         const { status } = req.query;
         
         // Query com JOIN e STRING_AGG para agrupar categorias numa única linha
@@ -95,7 +116,9 @@ router.get('/', async (req, res) => {
                 (r.photo_content IS NOT NULL) as has_photo,
                 COALESCE(STRING_AGG(DISTINCT c.nome, ', ' ORDER BY c.nome), 'Sem categoria') as tipo_lixo,
                 (SELECT COUNT(*) FROM public.collection_requests cr
-                 WHERE cr.report_id = r.id AND cr.status = 'Pendente') as solicitacoes_pendentes
+                 WHERE cr.report_id = r.id AND cr.status = 'Pendente') as solicitacoes_pendentes,
+                (SELECT COUNT(*) FROM public.collection_requests cr
+                 WHERE cr.report_id = r.id AND cr.status = 'Coletada') as coletadas_aguardando
             FROM reports r
             LEFT JOIN report_categories rc ON r.id = rc.report_id
             LEFT JOIN categories c ON rc.category_id = c.id
@@ -162,13 +185,13 @@ router.get('/:id/foto', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { status, empresa_selecionada } = req.body;
+        const { status, empresa_selecionada, quantidade, descricao_adicional, problemas_causados } = req.body;
 
         const fields = [];
         const values = [];
 
         if (status !== undefined) {
-            const statusValidos = ['Nova', 'Em verificação', 'Resolvida'];
+            const statusValidos = ['Nova', 'Em verificação', 'Cedido', 'Revisão', 'Resolvida'];
             if (!statusValidos.includes(status)) {
                 return res.status(400).json({ error: 'Status inválido.' });
             }
@@ -179,6 +202,21 @@ router.put('/:id', async (req, res) => {
         if (empresa_selecionada !== undefined) {
             fields.push(`empresa_selecionada = $${fields.length + 1}`);
             values.push(empresa_selecionada);
+        }
+
+        if (quantidade !== undefined) {
+            fields.push(`quantidade = $${fields.length + 1}`);
+            values.push(quantidade);
+        }
+
+        if (descricao_adicional !== undefined) {
+            fields.push(`descricao_adicional = $${fields.length + 1}`);
+            values.push(descricao_adicional);
+        }
+
+        if (problemas_causados !== undefined) {
+            fields.push(`problemas_causados = $${fields.length + 1}`);
+            values.push(problemas_causados);
         }
 
         if (fields.length === 0) {
@@ -256,7 +294,7 @@ router.post('/:id/requests/:requestId/approve', verifyToken, async (req, res) =>
         );
 
         await client.query(
-            `UPDATE public.reports SET empresa_selecionada = true WHERE id = $1`,
+            `UPDATE public.reports SET empresa_selecionada = true, status = 'Cedido' WHERE id = $1`,
             [id]
         );
 
@@ -306,6 +344,23 @@ router.post('/:id/requests/:requestId/deny', verifyToken, async (req, res) => {
         res.status(500).json({ error: "Erro ao negar solicitação." });
     } finally {
         client.release();
+    }
+});
+
+/*
+ * 8. ROTA: Gestor finaliza revisão pós-coleta
+ */
+router.post('/:id/review-collection', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query(
+            `UPDATE public.collection_requests SET status = 'Revisada' WHERE report_id = $1 AND status = 'Coletada'`,
+            [id]
+        );
+        res.json({ message: "Revisão registrada." });
+    } catch (err) {
+        console.error("Erro ao registrar revisão:", err);
+        res.status(500).json({ error: "Erro ao registrar revisão." });
     }
 });
 

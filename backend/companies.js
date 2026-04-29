@@ -136,6 +136,11 @@ router.get('/my-matches', verifyToken, async (req, res) => {
                 WHERE cr.report_id = r.id AND cr.status = 'Aprovada'
               )
         `);
+        await db.query(`
+            UPDATE public.reports
+            SET status = 'Em verificação'
+            WHERE status = 'Cedido' AND empresa_selecionada = false
+        `);
 
         const result = await db.query(`
             SELECT DISTINCT
@@ -145,18 +150,20 @@ router.get('/my-matches', verifyToken, async (req, res) => {
                 COALESCE(STRING_AGG(DISTINCT c.nome, ', ' ORDER BY c.nome), 'Sem categoria') as tipo_lixo,
                 (SELECT status FROM public.collection_requests
                  WHERE report_id = r.id AND company_id = $1
+                   AND status NOT IN ('Negada', 'Revisada', 'Expirada')
                  ORDER BY created_at DESC LIMIT 1) as minha_solicitacao,
                 (SELECT id FROM public.collection_requests
                  WHERE report_id = r.id AND company_id = $1
+                   AND status NOT IN ('Negada', 'Revisada', 'Expirada')
                  ORDER BY created_at DESC LIMIT 1) as request_id,
                 (SELECT prazo FROM public.collection_requests
                  WHERE report_id = r.id AND company_id = $1 AND status = 'Aprovada'
-                 LIMIT 1) as prazo_coleta
+                 ORDER BY created_at DESC LIMIT 1) as prazo_coleta
             FROM public.reports r
             JOIN public.report_categories rc ON r.id = rc.report_id
             JOIN public.company_categories cc ON rc.category_id = cc.category_id AND cc.company_id = $1
             LEFT JOIN public.categories c ON rc.category_id = c.id
-            WHERE r.status != 'Resolvida'
+            WHERE r.status IN ('Em verificação', 'Cedido')
               AND (
                 r.empresa_selecionada = false
                 OR EXISTS (
@@ -186,16 +193,22 @@ router.post('/requests/:reportId', verifyToken, async (req, res) => {
     const companyId = req.user.id;
     const { reportId } = req.params;
     try {
+        // Bloqueia apenas se houver solicitação ativa no ciclo atual
+        const ativa = await db.query(
+            `SELECT id FROM public.collection_requests
+             WHERE report_id = $1 AND company_id = $2 AND status IN ('Pendente', 'Aprovada', 'Coletada')`,
+            [reportId, companyId]
+        );
+        if (ativa.rows.length > 0) {
+            return res.status(409).json({ error: "Você já tem uma solicitação ativa para esta coleta." });
+        }
+
         await db.query(
-            `INSERT INTO public.collection_requests (report_id, company_id, status)
-             VALUES ($1, $2, 'Pendente')`,
+            `INSERT INTO public.collection_requests (report_id, company_id, status) VALUES ($1, $2, 'Pendente')`,
             [reportId, companyId]
         );
         res.status(201).json({ message: "Solicitação enviada com sucesso!" });
     } catch (err) {
-        if (err.code === '23505') {
-            return res.status(409).json({ error: "Você já solicitou esta coleta." });
-        }
         console.error("Erro ao solicitar coleta:", err);
         res.status(500).json({ error: "Erro ao enviar solicitação." });
     }
@@ -216,6 +229,10 @@ router.post('/requests/:requestId/confirm', verifyToken, async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: "Solicitação não encontrada ou não autorizada." });
         }
+        await db.query(
+            `UPDATE public.reports SET status = 'Revisão' WHERE id = $1`,
+            [result.rows[0].report_id]
+        );
         res.json({ message: "Coleta confirmada!" });
     } catch (err) {
         console.error("Erro ao confirmar coleta:", err);

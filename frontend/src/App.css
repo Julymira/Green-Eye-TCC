@@ -90,6 +90,7 @@ body {
 .dot.orange { background-color: #cb8427; }
 .dot.red { background-color: #cb2b3e; }
 .dot.blue { background-color: #2979ff; }
+.dot.violet { background-color: #8e24aa; }
 
 /* 5. SEÇÃO DOS CARDS (CAIXINHAS BRANCAS) */
 .steps-section {

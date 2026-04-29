@@ -74,8 +74,7 @@ CREATE TABLE IF NOT EXISTS public.collection_requests (
     status       VARCHAR(20) DEFAULT 'Pendente', -- 'Pendente', 'Aprovada', 'Negada', 'Coletada'
     prazo        TIMESTAMP,
     coletado_em  TIMESTAMP,
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_request_per_company UNIQUE (report_id, company_id)
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Normalização: Permite múltiplas categorias para uma denúncia e para uma empresa

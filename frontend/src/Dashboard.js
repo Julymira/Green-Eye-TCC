@@ -66,22 +66,24 @@ function Dashboard() {
     const [solicitacoes, setSolicitacoes] = useState([]);
     const [prazoInput, setPrazoInput] = useState('');
     const [heatmapAtivo, setHeatmapAtivo] = useState(false);
+    const [editando, setEditando] = useState(false);
+    const [editForm, setEditForm] = useState({ quantidade: '', descricao_adicional: '', problemas_causados: '' });
+    const [temColetaConfirmada, setTemColetaConfirmada] = useState(false);
     const navigate = useNavigate();
 
     // --- NOVA LÓGICA DE CORES (STATUS) ---
     const getIcon = (ocorrencia) => {
         let iconUrl;
-        
-        // 1. Resolvida = VERDE
+
         if (ocorrencia.status === 'Resolvida') {
             iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png';
-        } 
-        // 2. Em verificação = AMARELO (GOLD)
-        else if (ocorrencia.status === 'Em verificação') {
+        } else if (ocorrencia.status === 'Revisão') {
+            iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png';
+        } else if (ocorrencia.status === 'Cedido') {
+            iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png';
+        } else if (ocorrencia.status === 'Em verificação') {
             iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-gold.png';
-        } 
-        // 3. Nova = VERMELHO (Padrão para urgência)
-        else {
+        } else {
             iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png';
         }
 
@@ -122,16 +124,33 @@ function Dashboard() {
         }
     }, []);
 
-    const atualizarStatus = (id, novoStatus) => {
-        if (!window.confirm(`Mudar status para "${novoStatus}"?`)) return;
+    const confirmar = (mensagem) => new Promise((resolve) => {
+        toast((t) => (
+            <div>
+                <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>{mensagem}</p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => { toast.dismiss(t.id); resolve(true); }}
+                        style={{ background: '#2e7d32', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
+                        Confirmar
+                    </button>
+                    <button onClick={() => { toast.dismiss(t.id); resolve(false); }}
+                        style={{ background: '#757575', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        ), { duration: Infinity });
+    });
+
+    const atualizarStatus = async (id, novoStatus) => {
+        const ok = await confirmar(`Mudar status para "${novoStatus}"?`);
+        if (!ok) return;
         fetch(`/api/reports/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: novoStatus })
         }).then(res => {
-            if (res.ok) {
-                carregarDados();
-            }
+            if (res.ok) carregarDados();
         });
     };
 
@@ -140,9 +159,51 @@ function Dashboard() {
         document.getElementById('mapa-admin').scrollIntoView({ behavior: 'smooth' });
     };
 
+    const handleSalvarEdicao = async (acao = null) => {
+        const token = localStorage.getItem('token');
+        try {
+            const payload = { ...editForm };
+            if (acao === 'liberar') { payload.empresa_selecionada = false; payload.status = 'Em verificação'; }
+            if (acao === 'resolver') { payload.empresa_selecionada = false; payload.status = 'Resolvida'; }
+
+            await axios.put(
+                `http://localhost:3000/api/reports/${ocorrenciaSelecionada.id}`,
+                payload,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            // Marca as solicitações 'Coletada' como 'Revisada' para não re-abrir o formulário
+            if (acao === 'liberar' || acao === 'resolver') {
+                await axios.post(
+                    `http://localhost:3000/api/reports/${ocorrenciaSelecionada.id}/review-collection`,
+                    {},
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+            }
+
+            if (acao === 'liberar') toast.success("Informações salvas. Ocorrência liberada para nova coleta.");
+            else if (acao === 'resolver') toast.success("Ocorrência marcada como Resolvida.");
+            else toast.success("Ocorrência atualizada.");
+
+            setEditando(false);
+            setTemColetaConfirmada(false);
+            carregarDados();
+            if (acao) setOcorrenciaSelecionada(null);
+            else setOcorrenciaSelecionada(prev => ({ ...prev, ...editForm }));
+        } catch (err) {
+            toast.error("Erro ao salvar alterações.");
+        }
+    };
+
     const abrirDetalhes = async (ocorrencia) => {
         setOcorrenciaSelecionada(ocorrencia);
+        setEditForm({
+            quantidade: ocorrencia.quantidade || '',
+            descricao_adicional: ocorrencia.descricao_adicional || '',
+            problemas_causados: ocorrencia.problemas_causados || ''
+        });
         setSolicitacoes([]);
+        setTemColetaConfirmada(false);
         focarNoMapa(ocorrencia.lat, ocorrencia.lng);
         const token = localStorage.getItem('token');
         try {
@@ -150,8 +211,12 @@ function Dashboard() {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSolicitacoes(res.data);
+            const hasColetada = ocorrencia.status === 'Revisão';
+            setTemColetaConfirmada(hasColetada);
+            setEditando(hasColetada);
         } catch (err) {
             console.error("Erro ao buscar solicitações:", err);
+            setEditando(false);
         }
     };
 
@@ -192,22 +257,6 @@ function Dashboard() {
             carregarDados();
         } catch (err) {
             toast.error("Erro ao negar.");
-        }
-    };
-
-    const handleLiberarColeta = async () => {
-        const token = localStorage.getItem('token');
-        try {
-            await axios.put(
-                `http://localhost:3000/api/reports/${ocorrenciaSelecionada.id}`,
-                { empresa_selecionada: false },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            toast.success("Ocorrência liberada para novas solicitações.");
-            carregarDados();
-            setOcorrenciaSelecionada(null);
-        } catch (err) {
-            toast.error("Erro ao liberar ocorrência.");
         }
     };
 
@@ -327,6 +376,8 @@ function Dashboard() {
                                         <strong style={{display:'block', marginBottom:'5px'}}>Legenda (Status)</strong>
                                         <div><span className="dot red"></span> Nova</div>
                                         <div><span className="dot yellow"></span> Em Verificação</div>
+                                        <div><span className="dot blue"></span> Cedido</div>
+                                        <div><span className="dot violet"></span> Revisão</div>
                                         <div><span className="dot green"></span> Resolvida</div>
                                     </>
                                 )}
@@ -364,11 +415,17 @@ function Dashboard() {
                                                 <td style={tdStyle}>
                                                     <span style={{
                                                         padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold',
-                                                        background: d.status === 'Nova' ? '#ffebee' : d.status === 'Resolvida' ? '#e8f5e9' : '#fff3e0',
-                                                        color: d.status === 'Nova' ? '#c62828' : d.status === 'Resolvida' ? '#2e7d32' : '#e65100'
+                                                        background: d.status === 'Nova' ? '#ffebee' : d.status === 'Resolvida' ? '#e8f5e9' : d.status === 'Cedido' ? '#e3f2fd' : d.status === 'Revisão' ? '#f3e5f5' : '#fff3e0',
+                                                        color: d.status === 'Nova' ? '#c62828' : d.status === 'Resolvida' ? '#2e7d32' : d.status === 'Cedido' ? '#1565c0' : d.status === 'Revisão' ? '#6a1b9a' : '#e65100'
                                                     }}>
                                                         {d.status}
                                                     </span>
+                                                    {d.empresa_selecionada && (
+                                                        <span title="Empresa já selecionada para esta coleta" style={{ marginLeft: '5px' }}>⚠️</span>
+                                                    )}
+                                                    {parseInt(d.coletadas_aguardando) > 0 && (
+                                                        <span title="Coleta confirmada — aguardando revisão do gestor" style={{ marginLeft: '5px' }}>📦</span>
+                                                    )}
                                                     {parseInt(d.solicitacoes_pendentes) > 0 && (
                                                         <span title="Possui solicitações de coleta pendentes" style={{ marginLeft: '5px' }}>🛒</span>
                                                     )}
@@ -387,10 +444,10 @@ function Dashboard() {
                                                                 ⚠️ Verificar
                                                             </button>
                                                         )}
-                                                        {d.status === 'Em verificação' && (
-                                                            <button onClick={() => atualizarStatus(d.id, 'Resolvida')} style={{ cursor: 'pointer', background: '#43a047', color: 'white', border: 'none', padding: '5px 8px', borderRadius: '4px', fontSize: '11px' }}>
-                                                                ✅ Resolver
-                                                            </button>
+                                                        {d.status === 'Revisão' && (
+                                                            <span style={{ padding: '5px 8px', borderRadius: '4px', background: '#f3e5f5', color: '#6a1b9a', fontSize: '11px', fontWeight: 'bold' }}>
+                                                                📋 Revisar
+                                                            </span>
                                                         )}
                                                     </div>
                                                 </td>
@@ -414,8 +471,8 @@ function Dashboard() {
                                         <h3 style={{color: '#2e7d32', margin: 0}}>📄 Ocorrência #{ocorrenciaSelecionada.id}</h3>
                                         <span style={{
                                             padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold',
-                                            background: ocorrenciaSelecionada.status === 'Nova' ? '#ffebee' : ocorrenciaSelecionada.status === 'Resolvida' ? '#e8f5e9' : '#fff3e0',
-                                            color: ocorrenciaSelecionada.status === 'Nova' ? '#c62828' : ocorrenciaSelecionada.status === 'Resolvida' ? '#2e7d32' : '#e65100'
+                                            background: ocorrenciaSelecionada.status === 'Nova' ? '#ffebee' : ocorrenciaSelecionada.status === 'Resolvida' ? '#e8f5e9' : ocorrenciaSelecionada.status === 'Cedido' ? '#e3f2fd' : ocorrenciaSelecionada.status === 'Revisão' ? '#f3e5f5' : '#fff3e0',
+                                            color: ocorrenciaSelecionada.status === 'Nova' ? '#c62828' : ocorrenciaSelecionada.status === 'Resolvida' ? '#2e7d32' : ocorrenciaSelecionada.status === 'Cedido' ? '#1565c0' : ocorrenciaSelecionada.status === 'Revisão' ? '#6a1b9a' : '#e65100'
                                         }}>
                                             {ocorrenciaSelecionada.status}
                                         </span>
@@ -423,12 +480,7 @@ function Dashboard() {
                                         <div>
                                             {ocorrenciaSelecionada.status === 'Nova' && (
                                                 <button onClick={() => { atualizarStatus(ocorrenciaSelecionada.id, 'Em verificação'); setOcorrenciaSelecionada(null); }} style={{ cursor: 'pointer', padding: '8px 14px', border: '1px solid #ccc', borderRadius: '6px', background: '#fff3e0', fontSize: '13px' }}>
-                                                    ⚠️ Marcar como Em Verificação
-                                                </button>
-                                            )}
-                                            {ocorrenciaSelecionada.status === 'Em verificação' && (
-                                                <button onClick={() => { atualizarStatus(ocorrenciaSelecionada.id, 'Resolvida'); setOcorrenciaSelecionada(null); }} style={{ cursor: 'pointer', background: '#43a047', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '6px', fontSize: '13px' }}>
-                                                    ✅ Marcar como Resolvida
+                                                    ⚠️ Liberar para Verificação
                                                 </button>
                                             )}
                                         </div>
@@ -436,55 +488,86 @@ function Dashboard() {
                                 </div>
 
                                 {/* PAINEL DE SOLICITAÇÕES DE COLETA */}
-                                {solicitacoes.length > 0 && (
-                                    <div style={{ marginBottom: '20px', padding: '16px', background: '#f9f9f9', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-                                        <h4 style={{ margin: '0 0 12px 0', color: '#2e7d32', fontSize: '14px' }}>🛒 Solicitações de Coleta</h4>
+                                {solicitacoes.length > 0 && (() => {
+                                    const statusAtivo = ['Pendente', 'Aprovada', 'Coletada'];
+                                    const ativas = solicitacoes.filter(s => statusAtivo.includes(s.status));
+                                    const historico = solicitacoes.filter(s => !statusAtivo.includes(s.status));
+                                    const jaTemAprovada = ativas.some(s => s.status === 'Aprovada');
 
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-                                            <label style={{ fontSize: '13px', color: '#555' }}>Prazo para coleta:</label>
-                                            <input
-                                                type="date"
-                                                value={prazoInput}
-                                                onChange={e => setPrazoInput(e.target.value)}
-                                                style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
-                                            />
-                                        </div>
+                                    const badgeStyle = (status) => {
+                                        const map = {
+                                            'Pendente':  { bg: '#fff3e0', color: '#e65100' },
+                                            'Aprovada':  { bg: '#e8f5e9', color: '#2e7d32' },
+                                            'Coletada':  { bg: '#e3f2fd', color: '#1565c0' },
+                                            'Negada':    { bg: '#ffebee', color: '#c62828' },
+                                            'Revisada':  { bg: '#f3e5f5', color: '#6a1b9a' },
+                                            'Expirada':  { bg: '#eeeeee', color: '#616161' },
+                                        };
+                                        return map[status] || { bg: '#f5f5f5', color: '#555' };
+                                    };
 
-                                        {(() => {
-                                            const jaTemAprovada = solicitacoes.some(s => s.status === 'Aprovada');
-                                            return solicitacoes.map(s => (
-                                                <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'white', borderRadius: '6px', border: '1px solid #eee', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
-                                                    <div style={{ fontSize: '13px', color: '#444' }}>
-                                                        <strong>{s.nome_fantasia}</strong>
-                                                        <span style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold',
-                                                            background: s.status === 'Pendente' ? '#fff3e0' : s.status === 'Aprovada' ? '#e8f5e9' : s.status === 'Coletada' ? '#e3f2fd' : '#ffebee',
-                                                            color: s.status === 'Pendente' ? '#e65100' : s.status === 'Aprovada' ? '#2e7d32' : s.status === 'Coletada' ? '#1565c0' : '#c62828'
-                                                        }}>{s.status}</span>
-                                                        {s.prazo && <span style={{ marginLeft: '8px', fontSize: '12px', color: '#888' }}>Prazo: {new Date(s.prazo).toLocaleDateString('pt-BR')}</span>}
-                                                        {s.coletado_em && <span style={{ marginLeft: '8px', fontSize: '12px', color: '#2e7d32' }}>✅ Coletado em {new Date(s.coletado_em).toLocaleDateString('pt-BR')}</span>}
-                                                    </div>
-                                                    {s.status === 'Pendente' && (
-                                                        <div style={{ display: 'flex', gap: '6px' }}>
-                                                            {!jaTemAprovada && (
-                                                                <button onClick={() => handleAprovar(s.id)} style={{ cursor: 'pointer', background: '#2e7d32', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '12px' }}>
-                                                                    ✅ Aprovar
-                                                                </button>
-                                                            )}
-                                                            <button onClick={() => handleNegar(s.id)} style={{ cursor: 'pointer', background: '#c62828', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '12px' }}>
-                                                                ❌ Negar
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                    {s.status === 'Coletada' && ocorrenciaSelecionada.empresa_selecionada && (
-                                                        <button onClick={handleLiberarColeta} style={{ cursor: 'pointer', background: '#1565c0', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '12px' }}>
-                                                            🔓 Liberar outros materiais
+                                    const renderLinha = (s, isHistorico) => (
+                                        <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: isHistorico ? '#fafafa' : 'white', borderRadius: '6px', border: `1px solid ${isHistorico ? '#f0f0f0' : '#eee'}`, marginBottom: '6px', flexWrap: 'wrap', gap: '8px', opacity: isHistorico ? 0.75 : 1 }}>
+                                            <div style={{ fontSize: '13px', color: '#444' }}>
+                                                <strong>{s.nome_fantasia}</strong>
+                                                <span style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', background: badgeStyle(s.status).bg, color: badgeStyle(s.status).color }}>
+                                                    {s.status}
+                                                </span>
+                                                {s.prazo && <span style={{ marginLeft: '8px', fontSize: '12px', color: '#888' }}>Prazo: {new Date(s.prazo).toLocaleDateString('pt-BR')}</span>}
+                                                {s.coletado_em && <span style={{ marginLeft: '8px', fontSize: '12px', color: '#2e7d32' }}>✅ Coletado em {new Date(s.coletado_em).toLocaleDateString('pt-BR')}</span>}
+                                            </div>
+                                            {!isHistorico && s.status === 'Pendente' && (
+                                                <div style={{ display: 'flex', gap: '6px' }}>
+                                                    {!jaTemAprovada && (
+                                                        <button onClick={() => handleAprovar(s.id)} style={{ cursor: 'pointer', background: '#2e7d32', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '12px' }}>
+                                                            ✅ Aprovar
                                                         </button>
                                                     )}
+                                                    <button onClick={() => handleNegar(s.id)} style={{ cursor: 'pointer', background: '#c62828', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', fontSize: '12px' }}>
+                                                        ❌ Negar
+                                                    </button>
                                                 </div>
-                                            ));
-                                        })()}
-                                    </div>
-                                )}
+                                            )}
+                                            {!isHistorico && s.status === 'Coletada' && (
+                                                <span style={{ padding: '4px 10px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', background: '#fff8e1', color: '#f57f17' }}>
+                                                    📦 Aguardando revisão do gestor
+                                                </span>
+                                            )}
+                                        </div>
+                                    );
+
+                                    return (
+                                        <div style={{ marginBottom: '20px', padding: '16px', background: '#f9f9f9', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+                                            <h4 style={{ margin: '0 0 12px 0', color: '#2e7d32', fontSize: '14px' }}>🛒 Solicitações de Coleta</h4>
+
+                                            {ativas.length > 0 && (
+                                                <>
+                                                    {ativas.some(s => s.status === 'Pendente') && (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                                                            <label style={{ fontSize: '13px', color: '#555' }}>Prazo para coleta:</label>
+                                                            <input
+                                                                type="date"
+                                                                value={prazoInput}
+                                                                onChange={e => setPrazoInput(e.target.value)}
+                                                                style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    {ativas.map(s => renderLinha(s, false))}
+                                                </>
+                                            )}
+
+                                            {historico.length > 0 && (
+                                                <>
+                                                    <p style={{ fontSize: '12px', color: '#999', margin: '12px 0 6px 0', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                                                        Histórico anterior
+                                                    </p>
+                                                    {historico.map(s => renderLinha(s, true))}
+                                                </>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
 
                                 {/* CORPO: DUAS COLUNAS — informações | foto */}
                                 <div style={{display: 'flex', gap: '24px', alignItems: 'flex-start'}}>
@@ -499,18 +582,89 @@ function Dashboard() {
                                             <strong style={{color: '#2e7d32'}}>♻️ Tipo de Resíduo:</strong><br/>
                                             {ocorrenciaSelecionada.tipo_lixo}
                                         </div>
-                                        <div>
-                                            <strong style={{color: '#2e7d32'}}>📦 Quantidade:</strong><br/>
-                                            {ocorrenciaSelecionada.quantidade}
-                                        </div>
-                                        <div>
-                                            <strong style={{color: '#2e7d32'}}>⚠️ Problemas Observados:</strong><br/>
-                                            {ocorrenciaSelecionada.problemas_causados || <em style={{color:'#999'}}>Não informado</em>}
-                                        </div>
-                                        <div>
-                                            <strong style={{color: '#2e7d32'}}>📝 Descrição Adicional:</strong><br/>
-                                            {ocorrenciaSelecionada.descricao_adicional || <em style={{color:'#999'}}>Não informado</em>}
-                                        </div>
+
+                                        {editando ? (
+                                            <>
+                                                {temColetaConfirmada && (
+                                                    <div style={{ padding: '10px 14px', background: '#fff8e1', border: '1px solid #ffe082', borderRadius: '6px', fontSize: '13px', color: '#5d4037' }}>
+                                                        📦 <strong>A empresa confirmou a coleta.</strong> Revise as informações e decida o próximo passo.
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <strong style={{color: '#2e7d32'}}>📦 Quantidade:</strong><br/>
+                                                    <select
+                                                        value={editForm.quantidade}
+                                                        onChange={e => setEditForm(p => ({ ...p, quantidade: e.target.value }))}
+                                                        style={{ marginTop: '4px', padding: '5px 8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', width: '100%' }}
+                                                    >
+                                                        <option value="Pequena">Pequena</option>
+                                                        <option value="Média">Média</option>
+                                                        <option value="Grande">Grande</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <strong style={{color: '#2e7d32'}}>⚠️ Problemas Observados:</strong><br/>
+                                                    <textarea
+                                                        value={editForm.problemas_causados}
+                                                        onChange={e => setEditForm(p => ({ ...p, problemas_causados: e.target.value }))}
+                                                        rows={3}
+                                                        style={{ marginTop: '4px', padding: '6px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', width: '100%', resize: 'vertical' }}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <strong style={{color: '#2e7d32'}}>📝 Descrição Adicional:</strong><br/>
+                                                    <textarea
+                                                        value={editForm.descricao_adicional}
+                                                        onChange={e => setEditForm(p => ({ ...p, descricao_adicional: e.target.value }))}
+                                                        rows={3}
+                                                        style={{ marginTop: '4px', padding: '6px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', width: '100%', resize: 'vertical' }}
+                                                    />
+                                                </div>
+                                                {temColetaConfirmada ? (
+                                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                        <button onClick={() => handleSalvarEdicao('liberar')} style={{ cursor: 'pointer', background: '#1565c0', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '5px', fontSize: '13px', fontWeight: 'bold' }}>
+                                                            🔓 Ainda há material — Liberar para nova coleta
+                                                        </button>
+                                                        <button onClick={() => handleSalvarEdicao('resolver')} style={{ cursor: 'pointer', background: '#2e7d32', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '5px', fontSize: '13px', fontWeight: 'bold' }}>
+                                                            ✅ Material totalmente coletado — Resolver
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button onClick={() => handleSalvarEdicao()} style={{ cursor: 'pointer', background: '#2e7d32', color: 'white', border: 'none', padding: '7px 14px', borderRadius: '5px', fontSize: '13px', fontWeight: 'bold' }}>
+                                                            💾 Salvar
+                                                        </button>
+                                                        <button onClick={() => setEditando(false)} style={{ cursor: 'pointer', background: 'none', border: '1px solid #ccc', padding: '7px 14px', borderRadius: '5px', fontSize: '13px', color: '#555' }}>
+                                                            Cancelar
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <div>
+                                                        <strong style={{color: '#2e7d32'}}>📦 Quantidade:</strong><br/>
+                                                        {ocorrenciaSelecionada.quantidade}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setEditando(true)}
+                                                        style={{ cursor: 'pointer', background: 'none', border: '1px solid #ccc', borderRadius: '5px', padding: '4px 10px', fontSize: '12px', color: '#555' }}
+                                                    >
+                                                        ✏️ Editar
+                                                    </button>
+                                                </div>
+                                                <div>
+                                                    <strong style={{color: '#2e7d32'}}>⚠️ Problemas Observados:</strong><br/>
+                                                    {ocorrenciaSelecionada.problemas_causados || <em style={{color:'#999'}}>Não informado</em>}
+                                                </div>
+                                                <div>
+                                                    <strong style={{color: '#2e7d32'}}>📝 Descrição Adicional:</strong><br/>
+                                                    {ocorrenciaSelecionada.descricao_adicional || <em style={{color:'#999'}}>Não informado</em>}
+                                                </div>
+                                            </>
+                                        )}
+
                                         <div>
                                             <strong style={{color: '#2e7d32'}}>📍 Coordenadas:</strong><br/>
                                             {Number(ocorrenciaSelecionada.lat).toFixed(5)}, {Number(ocorrenciaSelecionada.lng).toFixed(5)}
