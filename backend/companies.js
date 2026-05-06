@@ -255,4 +255,40 @@ router.post('/requests/:requestId/confirm', verifyToken, async (req, res) => {
     }
 });
 
+// GET: Histórico completo de solicitações da empresa
+router.get('/my-history', verifyToken, async (req, res) => {
+    const companyId = req.user.id;
+    try {
+        const result = await db.query(`
+            SELECT
+                cr.id as request_id,
+                cr.status as request_status,
+                cr.prazo,
+                cr.coletado_em,
+                cr.created_at as solicitado_em,
+                r.id as report_id,
+                r.quantidade,
+                r.descricao_adicional,
+                r.problemas_causados,
+                r.lat,
+                r.lng,
+                r.status as report_status,
+                r.created_at as ocorrencia_criada_em,
+                (r.photo_content IS NOT NULL) as has_photo,
+                COALESCE(STRING_AGG(DISTINCT c.nome, ', ' ORDER BY c.nome), 'Sem categoria') as tipo_lixo
+            FROM public.collection_requests cr
+            JOIN public.reports r ON cr.report_id = r.id
+            LEFT JOIN report_categories rc ON r.id = rc.report_id
+            LEFT JOIN categories c ON rc.category_id = c.id
+            WHERE cr.company_id = $1
+            GROUP BY cr.id, r.id
+            ORDER BY cr.created_at DESC
+        `, [companyId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Erro ao buscar histórico da empresa:', err.message);
+        res.status(500).json({ error: 'Erro ao buscar histórico.' });
+    }
+});
+
 module.exports = router;

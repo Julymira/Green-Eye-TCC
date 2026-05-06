@@ -364,7 +364,49 @@ router.post('/:id/review-collection', verifyToken, async (req, res) => {
 });
 
 /*
- * 9. ROTA: Gestor unifica ocorrências repetidas
+ * 9. ROTA: Histórico de ocorrências resolvidas (Gestor)
+ */
+router.get('/historico', verifyToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                r.id, r.lat, r.lng, r.quantidade, r.status, r.created_at, r.updated_at,
+                r.descricao_adicional, r.problemas_causados,
+                (r.photo_content IS NOT NULL) as has_photo,
+                COALESCE(STRING_AGG(DISTINCT c.nome, ', ' ORDER BY c.nome), 'Sem categoria') as tipo_lixo,
+                (
+                    SELECT JSON_AGG(
+                        JSON_BUILD_OBJECT(
+                            'id', cr.id,
+                            'status', cr.status,
+                            'prazo', cr.prazo,
+                            'coletado_em', cr.coletado_em,
+                            'created_at', cr.created_at,
+                            'empresa', co.nome_fantasia,
+                            'empresa_email', co.email_contato,
+                            'empresa_telefone', co.telefone
+                        ) ORDER BY cr.created_at DESC
+                    )
+                    FROM public.collection_requests cr
+                    JOIN public.companies co ON cr.company_id = co.id
+                    WHERE cr.report_id = r.id
+                ) as coletas
+            FROM public.reports r
+            LEFT JOIN report_categories rc ON r.id = rc.report_id
+            LEFT JOIN categories c ON rc.category_id = c.id
+            WHERE r.status = 'Resolvida'
+            GROUP BY r.id
+            ORDER BY r.updated_at DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Erro ao buscar histórico:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/*
+ * 10. ROTA: Gestor unifica ocorrências repetidas
  */
 router.post('/merge', verifyToken, async (req, res) => {
     const { principal_id, absorvidas_ids } = req.body;

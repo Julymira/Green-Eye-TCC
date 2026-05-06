@@ -179,6 +179,9 @@ function DashboardCompany() {
                     🏢 Painel da Empresa: {companyInfo?.nome_fantasia}
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <button onClick={() => navigate('/dashboard-empresa/historico')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
+                        📋 Histórico
+                    </button>
                     <button onClick={() => navigate('/dashboard-empresa/tutorial')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
                         📖 Tutorial
                     </button>
