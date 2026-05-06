@@ -104,7 +104,7 @@ router.post('/', async (req, res) => {
             if (err.constraint && err.constraint.includes('cnpj')) {
                 return res.status(409).json({ error: "CNPJ já cadastrado." });
             }
-            if (err.constraint && err.constraint.includes('email')) {
+            if (err.constraint && err.constraint.includes('email_contato')) {
                 return res.status(409).json({ error: "E-mail já cadastrado." });
             }
             return res.status(409).json({ error: "Dados duplicados. Verifique CNPJ e e-mail." });

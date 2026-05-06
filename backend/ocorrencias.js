@@ -103,7 +103,7 @@ router.get('/', async (req, res) => {
         await pool.query(`
             UPDATE public.reports
             SET status = 'Em verificação'
-            WHERE status = 'Cedido' AND empresa_selecionada = false
+            WHERE status = 'Cedido' AND empresa_selecionada = false AND merged_into IS NULL
         `);
 
         const { status } = req.query;

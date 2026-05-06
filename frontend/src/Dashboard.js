@@ -235,6 +235,7 @@ function Dashboard() {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             toast.success("Solicitação aprovada!");
+            setPrazoInput('');
             abrirDetalhes(ocorrenciaSelecionada);
             carregarDados();
         } catch (err) {
@@ -551,7 +552,7 @@ function Dashboard() {
                                             </div>
 
                                             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                                                <button onClick={() => setModalUnificacao(false)} style={{ cursor: 'pointer', padding: '8px 16px', border: '1px solid #ccc', borderRadius: '6px', background: 'white', color: '#555', fontSize: '14px' }}>
+                                                <button onClick={() => { setModalUnificacao(false); setSelecionadas([]); setPrincipalId(null); }} style={{ cursor: 'pointer', padding: '8px 16px', border: '1px solid #ccc', borderRadius: '6px', background: 'white', color: '#555', fontSize: '14px' }}>
                                                     Cancelar
                                                 </button>
                                                 <button onClick={handleUnificar} style={{ cursor: 'pointer', padding: '8px 16px', border: 'none', borderRadius: '6px', background: '#6a1b9a', color: 'white', fontWeight: 'bold', fontSize: '14px' }}>
