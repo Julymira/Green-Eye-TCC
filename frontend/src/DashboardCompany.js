@@ -178,9 +178,14 @@ function DashboardCompany() {
                 <div className="brand" style={{ color: 'white', fontSize: '20px', fontWeight: 'bold' }}>
                     🏢 Painel da Empresa: {companyInfo?.nome_fantasia}
                 </div>
-                <button onClick={handleLogout} className="btn-logout" style={{ background: 'white', color: '#c62828', border: 'none', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                    Sair (Logout)
-                </button>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <button onClick={() => navigate('/dashboard-empresa/tutorial')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
+                        📖 Tutorial
+                    </button>
+                    <button onClick={handleLogout} className="btn-logout" style={{ background: 'white', color: '#c62828', border: 'none', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
+                        Sair (Logout)
+                    </button>
+                </div>
             </nav>
 
             <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
