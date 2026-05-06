@@ -100,7 +100,16 @@ router.post('/', async (req, res) => {
     } catch (err) {
         await client.query('ROLLBACK'); // Se der erro em qualquer parte, desfaz tudo
         console.error("Erro no cadastro:", err);
-        res.status(500).json({ error: "Erro ao cadastrar empresa. Verifique se o CNPJ já existe." });
+        if (err.code === '23505') {
+            if (err.constraint && err.constraint.includes('cnpj')) {
+                return res.status(409).json({ error: "CNPJ já cadastrado." });
+            }
+            if (err.constraint && err.constraint.includes('email')) {
+                return res.status(409).json({ error: "E-mail já cadastrado." });
+            }
+            return res.status(409).json({ error: "Dados duplicados. Verifique CNPJ e e-mail." });
+        }
+        res.status(500).json({ error: "Erro ao cadastrar empresa." });
     } finally {
         client.release(); // Libera o cliente de volta para o pool
     }
@@ -193,20 +202,19 @@ router.post('/requests/:reportId', verifyToken, async (req, res) => {
     const companyId = req.user.id;
     const { reportId } = req.params;
     try {
-        // Bloqueia apenas se houver solicitação ativa no ciclo atual
-        const ativa = await db.query(
-            `SELECT id FROM public.collection_requests
-             WHERE report_id = $1 AND company_id = $2 AND status IN ('Pendente', 'Aprovada', 'Coletada')`,
+        const result = await db.query(
+            `INSERT INTO public.collection_requests (report_id, company_id, status)
+             SELECT $1, $2, 'Pendente'
+             WHERE NOT EXISTS (
+                 SELECT 1 FROM public.collection_requests
+                 WHERE report_id = $1 AND company_id = $2 AND status IN ('Pendente', 'Aprovada', 'Coletada')
+             )
+             RETURNING id`,
             [reportId, companyId]
         );
-        if (ativa.rows.length > 0) {
+        if (result.rows.length === 0) {
             return res.status(409).json({ error: "Você já tem uma solicitação ativa para esta coleta." });
         }
-
-        await db.query(
-            `INSERT INTO public.collection_requests (report_id, company_id, status) VALUES ($1, $2, 'Pendente')`,
-            [reportId, companyId]
-        );
         res.status(201).json({ message: "Solicitação enviada com sucesso!" });
     } catch (err) {
         console.error("Erro ao solicitar coleta:", err);
@@ -218,8 +226,10 @@ router.post('/requests/:reportId', verifyToken, async (req, res) => {
 router.post('/requests/:requestId/confirm', verifyToken, async (req, res) => {
     const companyId = req.user.id;
     const { requestId } = req.params;
+    const client = await db.connect();
     try {
-        const result = await db.query(
+        await client.query('BEGIN');
+        const result = await client.query(
             `UPDATE public.collection_requests
              SET status = 'Coletada', coletado_em = NOW()
              WHERE id = $1 AND company_id = $2 AND status = 'Aprovada'
@@ -227,16 +237,21 @@ router.post('/requests/:requestId/confirm', verifyToken, async (req, res) => {
             [requestId, companyId]
         );
         if (result.rows.length === 0) {
+            await client.query('ROLLBACK');
             return res.status(404).json({ error: "Solicitação não encontrada ou não autorizada." });
         }
-        await db.query(
+        await client.query(
             `UPDATE public.reports SET status = 'Revisão' WHERE id = $1`,
             [result.rows[0].report_id]
         );
+        await client.query('COMMIT');
         res.json({ message: "Coleta confirmada!" });
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error("Erro ao confirmar coleta:", err);
         res.status(500).json({ error: "Erro ao confirmar coleta." });
+    } finally {
+        client.release();
     }
 });
 
