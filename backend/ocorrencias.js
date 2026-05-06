@@ -125,7 +125,7 @@ router.get('/', async (req, res) => {
             LEFT JOIN categories c ON rc.category_id = c.id
         `;
 
-        let condicoes = ['r.merged_into IS NULL'];
+        let condicoes = ['r.merged_into IS NULL', "r.status != 'Resolvida'"];
 
         let params = [];
 
