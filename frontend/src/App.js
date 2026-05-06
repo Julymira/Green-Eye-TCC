@@ -13,6 +13,7 @@ import RegisterCompany from './RegisterCompany';
 import LoginCompany from './LoginCompany';
 import DashboardCompany from './DashboardCompany';
 import ChangePassword from './ChangePassword';
+import TutorialGestor from './TutorialGestor';
 
 // --- NOVO: Layout para as páginas públicas (Com a Navbar padrão) ---
 function LayoutPublico() {
@@ -55,6 +56,7 @@ function App() {
 
           {/* GRUPO 2: Área Admin (Sem Layout padrão, usa a própria Navbar) */}
           <Route path="/admin" element={<Dashboard />} />
+          <Route path="/admin/tutorial" element={<TutorialGestor />} />
           <Route path="/dashboard-empresa" element={<DashboardCompany />} />
 
         </Routes>
