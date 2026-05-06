@@ -61,7 +61,11 @@ CREATE TABLE IF NOT EXISTS public.reports (
     -- Localização
     lat DOUBLE PRECISION NOT NULL,
     lng DOUBLE PRECISION NOT NULL,
-    localizacao geometry(Point, 4326)
+    localizacao geometry(Point, 4326),
+
+    -- Unificação de ocorrências repetidas
+    merged_into  INTEGER REFERENCES public.reports(id),
+    peso_heatmap INTEGER DEFAULT NULL
 );
 
 -- 6. TABELAS INTERMEDIÁRIAS (N:N - Muitos para Muitos)

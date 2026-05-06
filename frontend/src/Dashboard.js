@@ -36,21 +36,20 @@ function MapController({ coords }) {
 }
 
 // --- COMPONENTE DE HEATMAP ---
-const pesoQuantidade = { 'Pequena': 1, 'Média': 2, 'Grande': 3 };
-
 function HeatmapLayer({ ocorrencias }) {
     const map = useMap();
     useEffect(() => {
         const pontos = ocorrencias.map(d => [
             parseFloat(d.lat),
             parseFloat(d.lng),
-            pesoQuantidade[d.quantidade] || 1
+            parseInt(d.peso_heatmap) || 1
         ]);
+        const maxPeso = Math.max(...pontos.map(p => p[2]), 3);
         const heat = L.heatLayer(pontos, {
             radius: 25,
             blur: 25,
             maxZoom: 17,
-            max: 3,
+            max: maxPeso,
             gradient: { 0.3: 'blue', 0.5: 'lime', 0.7: 'yellow', 1.0: 'red' }
         }).addTo(map);
         return () => { map.removeLayer(heat); };
@@ -69,6 +68,9 @@ function Dashboard() {
     const [editando, setEditando] = useState(false);
     const [editForm, setEditForm] = useState({ quantidade: '', descricao_adicional: '', problemas_causados: '' });
     const [temColetaConfirmada, setTemColetaConfirmada] = useState(false);
+    const [selecionadas, setSelecionadas] = useState([]);
+    const [modalUnificacao, setModalUnificacao] = useState(false);
+    const [principalId, setPrincipalId] = useState(null);
     const navigate = useNavigate();
 
     // --- NOVA LÓGICA DE CORES (STATUS) ---
@@ -260,6 +262,37 @@ function Dashboard() {
         }
     };
 
+    const toggleSelecionada = (id) => {
+        setSelecionadas(prev =>
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    const abrirModalUnificacao = () => {
+        setPrincipalId(selecionadas[0]);
+        setModalUnificacao(true);
+    };
+
+    const handleUnificar = async () => {
+        if (!principalId) return;
+        const absorvidas = selecionadas.filter(id => id !== principalId);
+        const token = localStorage.getItem('token');
+        try {
+            await axios.post(
+                'http://localhost:3000/api/reports/merge',
+                { principal_id: principalId, absorvidas_ids: absorvidas },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            toast.success('Ocorrências unificadas com sucesso!');
+            setModalUnificacao(false);
+            setSelecionadas([]);
+            setPrincipalId(null);
+            carregarDados();
+        } catch (err) {
+            toast.error(err.response?.data?.error || 'Erro ao unificar.');
+        }
+    };
+
     useEffect(() => {
         const needsChange = localStorage.getItem('needsPasswordChange');
         const token = localStorage.getItem('token');
@@ -394,10 +427,21 @@ function Dashboard() {
                     <div className="dashboard-card" style={{overflowX: ocorrenciaSelecionada ? 'visible' : 'auto'}}>
                         {!ocorrenciaSelecionada ? (
                             <>
-                                <h3 style={{color: '#2e7d32', marginTop: 0}}>📋 Lista de Ocorrências</h3>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                    <h3 style={{color: '#2e7d32', margin: 0}}>📋 Lista de Ocorrências</h3>
+                                    {selecionadas.length >= 2 && (
+                                        <button
+                                            onClick={abrirModalUnificacao}
+                                            style={{ cursor: 'pointer', padding: '7px 14px', background: '#6a1b9a', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', fontSize: '13px' }}
+                                        >
+                                            🔗 Unificar Selecionadas ({selecionadas.length})
+                                        </button>
+                                    )}
+                                </div>
                                 <table style={tableStyle}>
                                     <thead>
                                         <tr>
+                                            <th style={{...thStyle, width: '32px'}}></th>
                                             <th style={thStyle}>ID</th>
                                             <th style={thStyle}>Data</th>
                                             <th style={thStyle}>Tipo</th>
@@ -407,7 +451,15 @@ function Dashboard() {
                                     </thead>
                                     <tbody>
                                         {ocorrencias.map(d => (
-                                            <tr key={d.id} style={{background: d.status === 'Resolvida' ? '#f9f9f9' : 'white'}}>
+                                            <tr key={d.id} style={{background: selecionadas.includes(d.id) ? '#f3e5f5' : d.status === 'Resolvida' ? '#f9f9f9' : 'white'}}>
+                                                <td style={{...tdStyle, textAlign: 'center'}}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selecionadas.includes(d.id)}
+                                                        onChange={() => toggleSelecionada(d.id)}
+                                                        style={{ cursor: 'pointer', width: '15px', height: '15px' }}
+                                                    />
+                                                </td>
                                                 <td style={tdStyle}>#{d.id}</td>
                                                 <td style={tdStyle}>
                                                     {new Date(d.created_at).toLocaleDateString('pt-BR')} <br/>
@@ -460,6 +512,55 @@ function Dashboard() {
                                         ))}
                                     </tbody>
                                 </table>
+
+                                {/* MODAL DE UNIFICAÇÃO */}
+                                {modalUnificacao && (
+                                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <div style={{ background: 'white', borderRadius: '10px', padding: '28px', maxWidth: '520px', width: '90%', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+                                            <h3 style={{ color: '#6a1b9a', marginTop: 0 }}>🔗 Unificar Ocorrências</h3>
+                                            <p style={{ fontSize: '14px', color: '#555', marginBottom: '16px' }}>
+                                                Escolha qual será a <strong>ocorrência principal</strong>. As demais serão absorvidas e seus pesos somados no mapa de calor.
+                                            </p>
+
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                                                {selecionadas.map(id => {
+                                                    const oc = ocorrencias.find(o => o.id === id);
+                                                    return (
+                                                        <label key={id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '6px', border: `2px solid ${principalId === id ? '#6a1b9a' : '#e0e0e0'}`, background: principalId === id ? '#f3e5f5' : 'white', cursor: 'pointer', fontSize: '14px' }}>
+                                                            <input
+                                                                type="radio"
+                                                                name="principal"
+                                                                value={id}
+                                                                checked={principalId === id}
+                                                                onChange={() => setPrincipalId(id)}
+                                                                style={{ cursor: 'pointer' }}
+                                                            />
+                                                            <div>
+                                                                <strong>#{id}</strong> — {oc?.tipo_lixo} ({oc?.quantidade})
+                                                                <br/>
+                                                                <small style={{ color: '#888' }}>{new Date(oc?.created_at).toLocaleDateString('pt-BR')} · {oc?.status}</small>
+                                                            </div>
+                                                            {principalId === id && <span style={{ marginLeft: 'auto', fontSize: '11px', background: '#6a1b9a', color: 'white', padding: '2px 8px', borderRadius: '10px' }}>Principal</span>}
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            <div style={{ fontSize: '13px', color: '#888', marginBottom: '20px', padding: '10px 14px', background: '#f9f9f9', borderRadius: '6px' }}>
+                                                As ocorrências absorvidas terão status <strong>Unificada</strong> e não aparecerão mais na lista, mas o peso delas no mapa de calor será mantido na ocorrência principal.
+                                            </div>
+
+                                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                                                <button onClick={() => setModalUnificacao(false)} style={{ cursor: 'pointer', padding: '8px 16px', border: '1px solid #ccc', borderRadius: '6px', background: 'white', color: '#555', fontSize: '14px' }}>
+                                                    Cancelar
+                                                </button>
+                                                <button onClick={handleUnificar} style={{ cursor: 'pointer', padding: '8px 16px', border: 'none', borderRadius: '6px', background: '#6a1b9a', color: 'white', fontWeight: 'bold', fontSize: '14px' }}>
+                                                    🔗 Confirmar Unificação
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         ) : (
                             <>

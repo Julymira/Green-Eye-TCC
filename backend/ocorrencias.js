@@ -114,6 +114,7 @@ router.get('/', async (req, res) => {
                 r.id, r.lat, r.lng, r.quantidade, r.status, r.created_at, r.descricao_adicional,
                 r.problemas_causados, r.empresa_selecionada,
                 (r.photo_content IS NOT NULL) as has_photo,
+                COALESCE(r.peso_heatmap, CASE r.quantidade WHEN 'Pequena' THEN 1 WHEN 'Média' THEN 2 WHEN 'Grande' THEN 3 ELSE 1 END) as peso_heatmap,
                 COALESCE(STRING_AGG(DISTINCT c.nome, ', ' ORDER BY c.nome), 'Sem categoria') as tipo_lixo,
                 (SELECT COUNT(*) FROM public.collection_requests cr
                  WHERE cr.report_id = r.id AND cr.status = 'Pendente') as solicitacoes_pendentes,
@@ -124,7 +125,7 @@ router.get('/', async (req, res) => {
             LEFT JOIN categories c ON rc.category_id = c.id
         `;
 
-        let condicoes = [];
+        let condicoes = ['r.merged_into IS NULL'];
 
         let params = [];
 
@@ -138,7 +139,7 @@ router.get('/', async (req, res) => {
             query += " WHERE " + condicoes.join(" AND ");
         }
 
-        query += " GROUP BY r.id, r.lat, r.lng, r.quantidade, r.status, r.created_at, r.descricao_adicional, r.problemas_causados, r.empresa_selecionada";
+        query += " GROUP BY r.id, r.lat, r.lng, r.quantidade, r.status, r.created_at, r.descricao_adicional, r.problemas_causados, r.empresa_selecionada, r.peso_heatmap";
         query += " ORDER BY r.created_at DESC";
         
         const result = await pool.query(query, params);
@@ -189,7 +190,7 @@ router.put('/:id', async (req, res) => {
         const values = [];
 
         if (status !== undefined) {
-            const statusValidos = ['Nova', 'Em verificação', 'Cedido', 'Revisão', 'Resolvida'];
+            const statusValidos = ['Nova', 'Em verificação', 'Cedido', 'Revisão', 'Resolvida', 'Unificada'];
             if (!statusValidos.includes(status)) {
                 return res.status(400).json({ error: 'Status inválido.' });
             }
@@ -359,6 +360,63 @@ router.post('/:id/review-collection', verifyToken, async (req, res) => {
     } catch (err) {
         console.error("Erro ao registrar revisão:", err);
         res.status(500).json({ error: "Erro ao registrar revisão." });
+    }
+});
+
+/*
+ * 9. ROTA: Gestor unifica ocorrências repetidas
+ */
+router.post('/merge', verifyToken, async (req, res) => {
+    const { principal_id, absorvidas_ids } = req.body;
+
+    if (!principal_id || !Array.isArray(absorvidas_ids) || absorvidas_ids.length === 0) {
+        return res.status(400).json({ error: 'Informe o ID principal e ao menos uma ocorrência a absorver.' });
+    }
+    if (absorvidas_ids.includes(principal_id)) {
+        return res.status(400).json({ error: 'A ocorrência principal não pode estar na lista de absorvidas.' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Busca pesos individuais de todas (principal + absorvidas)
+        const todosIds = [principal_id, ...absorvidas_ids];
+        const { rows: todasOcorrencias } = await client.query(
+            `SELECT id, quantidade, peso_heatmap FROM public.reports WHERE id = ANY($1) AND merged_into IS NULL`,
+            [todosIds]
+        );
+
+        if (todasOcorrencias.length !== todosIds.length) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Uma ou mais ocorrências não foram encontradas ou já estão unificadas.' });
+        }
+
+        const pesoMap = { 'Pequena': 1, 'Média': 2, 'Grande': 3 };
+        const pesoTotal = todasOcorrencias.reduce((acc, r) => {
+            return acc + (r.peso_heatmap || pesoMap[r.quantidade] || 1);
+        }, 0);
+
+        // Atualiza a principal com o peso acumulado
+        await client.query(
+            `UPDATE public.reports SET peso_heatmap = $1, updated_at = NOW() WHERE id = $2`,
+            [pesoTotal, principal_id]
+        );
+
+        // Marca as absorvidas
+        await client.query(
+            `UPDATE public.reports SET merged_into = $1, status = 'Unificada', updated_at = NOW() WHERE id = ANY($2)`,
+            [principal_id, absorvidas_ids]
+        );
+
+        await client.query('COMMIT');
+        res.json({ message: 'Ocorrências unificadas com sucesso!', peso_heatmap: pesoTotal });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Erro ao unificar ocorrências:', err);
+        res.status(500).json({ error: 'Erro ao unificar ocorrências.' });
+    } finally {
+        client.release();
     }
 });
 
