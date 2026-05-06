@@ -124,9 +124,7 @@ router.get('/', async (req, res) => {
             LEFT JOIN categories c ON rc.category_id = c.id
         `;
 
-        let condicoes = [
-            "(r.status != 'Resolvida' OR (r.status = 'Resolvida' AND r.updated_at > NOW() - INTERVAL '24 HOURS'))"
-        ];
+        let condicoes = [];
 
         let params = [];
 
