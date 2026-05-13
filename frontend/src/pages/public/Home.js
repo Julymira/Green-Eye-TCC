@@ -1,7 +1,7 @@
 // src/Home.js
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Mapa from './Mapa';
+import Mapa from '../../componentes/Mapa';
 
 function Home() {
   return (

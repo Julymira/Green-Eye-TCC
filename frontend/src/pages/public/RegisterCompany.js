@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import './RegisterCompany.css'; 
+import '../../styles/RegisterCompany.css';
 
 function RegisterCompany() {
     const [formData, setFormData] = useState({
@@ -54,7 +54,7 @@ function RegisterCompany() {
             const payload = { ...formData, categories: selectedCategories };
             await axios.post('http://localhost:3000/api/companies', payload);
             toast.success("Empresa cadastrada com sucesso!");
-            navigate('/login');
+            navigate('/login-empresa');
         } catch (error) {
             toast.error("Erro ao cadastrar. Verifique se o CNPJ ou E-mail já existem.");
         }

@@ -2,25 +2,25 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import './App.css';
+import './styles/App.css';
 
 // Importando as páginas
-import Home from './Home';
-import NovaOcorrencia from './NovaOcorrencia';
-import Login from './Login';
-import Dashboard from './Dashboard';
-import RegisterCompany from './RegisterCompany';
-import LoginCompany from './LoginCompany';
-import DashboardCompany from './DashboardCompany';
-import ChangePassword from './ChangePassword';
-import TutorialGestor from './TutorialGestor';
-import TutorialEmpresa from './TutorialEmpresa';
-import HistoricoGestor from './HistoricoGestor';
-import HistoricoEmpresa from './HistoricoEmpresa';
-import Relatorios from './Relatorios';
-import NovaOcorrenciaGestor from './NovaOcorrenciaGestor';
-import PainelSuperAdmin from './PainelSuperAdmin';
-import TutorialSuperAdmin from './TutorialSuperAdmin';
+import Home from './pages/public/Home';
+import NovaOcorrencia from './pages/public/NovaOcorrencia';
+import Login from './pages/public/Login';
+import Dashboard from './pages/gestor/Dashboard';
+import RegisterCompany from './pages/public/RegisterCompany';
+import LoginCompany from './pages/public/LoginCompany';
+import DashboardCompany from './pages/company/DashboardCompany';
+import ChangePassword from './pages/public/ChangePassword';
+import TutorialGestor from './pages/gestor/TutorialGestor';
+import TutorialEmpresa from './pages/company/TutorialEmpresa';
+import HistoricoGestor from './pages/gestor/HistoricoGestor';
+import HistoricoEmpresa from './pages/company/HistoricoEmpresa';
+import Relatorios from './pages/gestor/Relatorios';
+import NovaOcorrenciaGestor from './pages/gestor/NovaOcorrenciaGestor';
+import PainelSuperAdmin from './pages/superadmin/PainelSuperAdmin';
+import TutorialSuperAdmin from './pages/superadmin/TutorialSuperAdmin';
 
 // --- NOVO: Layout para as páginas públicas (Com a Navbar padrão) ---
 function LayoutPublico() {

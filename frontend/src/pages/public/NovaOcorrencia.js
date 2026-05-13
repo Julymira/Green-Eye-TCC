@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import './RegisterCompany.css';
+import '../../styles/RegisterCompany.css';
 
 // --- ÍCONES ---
 import iconMarker from 'leaflet/dist/images/marker-icon.png';
