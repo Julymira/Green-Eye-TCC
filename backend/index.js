@@ -1,11 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const pool = require('./db');
+const pool = require('./config/db');
 
-const adminUsersRouter = require('./admin_users');
-const ocorrenciasRouter = require('./ocorrencias');
-const companiesRouter = require('./companies')
+const adminUsersRouter = require('./routes/admin_users');
+const ocorrenciasRouter = require('./routes/ocorrencias');
+const companiesRouter = require('./routes/companies');
 
 const path = require('path');
 const app = express();

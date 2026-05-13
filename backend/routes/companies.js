@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const db = require('./db');
+const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'minha_chave_secreta_tcc_2026';
 

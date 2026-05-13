@@ -2,11 +2,11 @@ const jwt = require('jsonwebtoken');const express = require("express");
 const JWT_SECRET = process.env.JWT_SECRET || 'minha_chave_secreta_tcc_2026';
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const db = require("./db");
+const db = require("../config/db");
 
 const router = express.Router();
 
-const { verifyToken, requireSuperAdmin } = require('./auth');
+const { verifyToken, requireSuperAdmin } = require('../middleware/auth');
 
 // Somente usuários logados podem ver a lista de ocorrências
 router.get('/reports', verifyToken, async (req, res) => {
