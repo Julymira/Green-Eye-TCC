@@ -334,6 +334,9 @@ function Dashboard() {
                     📊 Painel do Gestor
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <button onClick={() => navigate('/admin/nova-ocorrencia')} style={{ background: 'white', color: '#2e7d32', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
+                        ➕ Nova Ocorrência
+                    </button>
                     <button onClick={() => navigate('/admin/relatorios')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
                         📈 Relatórios
                     </button>
