@@ -8,15 +8,6 @@ const router = express.Router();
 
 const { verifyToken, requireSuperAdmin } = require('../middleware/auth');
 
-// Somente usuários logados podem ver a lista de ocorrências
-router.get('/reports', verifyToken, async (req, res) => {
-    // Se chegou aqui, é porque o Token é válido!
-    // Você pode até verificar se o usuário é admin:
-    if (req.user.userType !== 'admin') {
-        return res.status(403).json({ error: "Apenas administradores podem ver isso." });
-    }
-    
-});
 
 // POST: Cadastrar usuário administrador (apenas para uso interno/inicial)
 router.post("/register", async (req, res) => {

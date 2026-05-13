@@ -28,15 +28,8 @@ app.use('/api/companies', companiesRouter);
     await pool.query('SELECT 1');
     console.log('✅ Conexão com o banco de dados estabelecida com sucesso!');
   } catch (error) {
-      console.log("ERRO COMPLETO:", error);
-
-      if (error.response) {
-          alert('❌ ' + error.response.data.error);
-      } else if (error.request) {
-          alert('❌ Sem resposta do servidor (backend offline)');
-      } else {
-          alert('❌ Erro ao enviar requisição');
-      }
+      console.error('❌ Erro ao conectar ao banco de dados:', error.message);
+      process.exit(1);
   }
 })();
 

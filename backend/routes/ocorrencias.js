@@ -367,6 +367,9 @@ router.post('/:id/review-collection', verifyToken, async (req, res) => {
  * 9. ROTA: Estatísticas completas para relatórios (Gestor)
  */
 router.get('/estatisticas', verifyToken, async (req, res) => {
+    if (req.user.userType !== 'admin') {
+        return res.status(403).json({ error: "Acesso restrito a administradores." });
+    }
     try {
         const [
             kpis,
