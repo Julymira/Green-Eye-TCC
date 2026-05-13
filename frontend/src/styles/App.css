@@ -386,15 +386,12 @@ input[type="file"] {
 }
 
 .form-map-large {
-  /* A MÁGICA: Ocupa todo o espaço vertical que sobrar */
-  flex: 1; 
   width: 100%;
+  height: 500px;
   border-radius: 8px;
   overflow: hidden;
   border: 2px solid #c5e1a5;
   position: relative;
-  /* Altura mínima para garantir que o mapa apareça mesmo se o form for pequeno */
-  min-height: 400px; 
 }
 
 /* RESPONSIVIDADE (CELULAR) */
