@@ -6,7 +6,7 @@ const db = require("./db");
 
 const router = express.Router();
 
-const { verifyToken } = require('./auth');
+const { verifyToken, requireSuperAdmin } = require('./auth');
 
 // Somente usuários logados podem ver a lista de ocorrências
 router.get('/reports', verifyToken, async (req, res) => {
@@ -48,7 +48,7 @@ router.post("/login", async (req, res) => {
 
     try {
         // 1. Busca o usuário pelo CPF
-        const result = await db.query('SELECT id, email, password, cpf, is_temp_password FROM public.users WHERE cpf = $1', [cpf]);
+        const result = await db.query('SELECT id, email, password, cpf, is_temp_password, role FROM public.users WHERE cpf = $1', [cpf]);
 
         // 2. Verifica se encontrou alguém
         if (result.rows.length === 0) {
@@ -72,20 +72,20 @@ router.post("/login", async (req, res) => {
 
         // 4. Gera o Token JWT
         const token = jwt.sign(
-            { id: user.id, userType: 'admin' }, 
-            JWT_SECRET, 
+            { id: user.id, userType: 'admin', role: user.role },
+            JWT_SECRET,
             { expiresIn: '24h' }
         );
 
-        // 5. Retorna o sucesso
-        res.json({ 
-            message: "Sucesso!", 
-            token, 
-            user: { 
-                id: user.id, 
+        res.json({
+            message: "Sucesso!",
+            token,
+            user: {
+                id: user.id,
                 email: user.email,
-                needsPasswordChange: user.is_temp_password // 👈 Adicione isso
-            } 
+                role: user.role,
+                needsPasswordChange: user.is_temp_password
+            }
         });
 
     } catch (error) {
@@ -156,6 +156,115 @@ router.post("/generate-temp-password", async (req, res) => {
         res.json({ message: "Senha temporária gerada e atualizada com sucesso.", tempPassword: tempPassword });
     } catch (error) {
         console.error("Erro ao gerar senha temporária:", error);
+        res.status(500).json({ error: "Erro interno do servidor." });
+    }
+});
+
+// ── ROTAS EXCLUSIVAS DO SUPER ADMIN ──────────────────────────────────────────
+
+// GET: Listar todos os usuários gerenciáveis (exceto o próprio superadmin logado)
+router.get('/gestores', verifyToken, requireSuperAdmin, async (req, res) => {
+    try {
+        const result = await db.query(
+            "SELECT id, email, cpf, is_temp_password, created_at, role FROM public.users WHERE id != $1 ORDER BY created_at DESC",
+            [req.user.id]
+        );
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Erro ao listar gestores:", error);
+        res.status(500).json({ error: "Erro interno do servidor." });
+    }
+});
+
+// POST: Criar novo gestor
+router.post('/gestores', verifyToken, requireSuperAdmin, async (req, res) => {
+    const { email, cpf, role } = req.body;
+
+    if (!email || !cpf) {
+        return res.status(400).json({ error: "Email e CPF são obrigatórios." });
+    }
+
+    const roleValido = ['gestor', 'superadmin'].includes(role) ? role : 'gestor';
+    const cpfLimpo = cpf.replace(/\D/g, '');
+
+    if (cpfLimpo.length !== 11) {
+        return res.status(400).json({ error: "CPF inválido. Informe os 11 dígitos." });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Email inválido." });
+    }
+
+    try {
+        const tempPassword = crypto.randomBytes(8).toString("hex");
+        const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+        const result = await db.query(
+            "INSERT INTO public.users (email, cpf, password, is_temp_password, role) VALUES ($1, $2, $3, TRUE, $4) RETURNING id, email, cpf, role",
+            [email, cpfLimpo, hashedPassword, roleValido]
+        );
+
+        res.status(201).json({
+            message: "Gestor criado com sucesso!",
+            gestor: result.rows[0],
+            tempPassword
+        });
+    } catch (error) {
+        console.error("Erro ao criar gestor:", error);
+        if (error.code === "23505") {
+            return res.status(409).json({ error: "Email ou CPF já cadastrado." });
+        }
+        res.status(500).json({ error: "Erro interno do servidor." });
+    }
+});
+
+// POST: Resetar senha de um gestor (gera nova senha temporária)
+router.post('/gestores/:id/reset-senha', verifyToken, requireSuperAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await db.query("SELECT id, email FROM public.users WHERE id = $1 AND id != $2", [id, req.user.id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Gestor não encontrado." });
+        }
+
+        const tempPassword = crypto.randomBytes(8).toString("hex");
+        const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+        await db.query(
+            "UPDATE public.users SET password = $1, is_temp_password = TRUE WHERE id = $2",
+            [hashedPassword, id]
+        );
+
+        res.json({ message: "Senha resetada com sucesso.", tempPassword });
+    } catch (error) {
+        console.error("Erro ao resetar senha:", error);
+        res.status(500).json({ error: "Erro interno do servidor." });
+    }
+});
+
+// DELETE: Remover um usuário (superadmin não pode remover outro superadmin)
+router.delete('/gestores/:id', verifyToken, requireSuperAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    if (parseInt(id) === req.user.id) {
+        return res.status(400).json({ error: "Você não pode remover sua própria conta." });
+    }
+
+    try {
+        const check = await db.query("SELECT role FROM public.users WHERE id = $1", [id]);
+        if (check.rows.length === 0) {
+            return res.status(404).json({ error: "Usuário não encontrado." });
+        }
+        if (check.rows[0].role === 'superadmin') {
+            return res.status(403).json({ error: "Não é permitido remover outro Super Admin." });
+        }
+
+        await db.query("DELETE FROM public.users WHERE id = $1", [id]);
+        res.json({ message: "Gestor removido com sucesso." });
+    } catch (error) {
+        console.error("Erro ao remover gestor:", error);
         res.status(500).json({ error: "Erro interno do servidor." });
     }
 });
