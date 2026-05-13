@@ -378,14 +378,19 @@ function AbaResiduos({ dados }) {
 
 // ─── ABA 3: EMPRESAS ─────────────────────────────────────────────────────────
 function AbaEmpresas({ dados, kc }) {
+    const truncar = nome => {
+        const s = nome || '';
+        return s.length > 18 ? s.slice(0, 18) + '…' : s;
+    };
+
     const ranking = (dados.ranking_empresas || []).map(d => ({
-        empresa: d.nome_fantasia.length > 18 ? d.nome_fantasia.slice(0, 18) + '…' : d.nome_fantasia,
-        Coletadas: parseInt(d.coletadas),
-        Total: parseInt(d.total_solicitacoes),
+        empresa: truncar(d.nome_fantasia),
+        Coletadas: parseInt(d.coletadas) || 0,
+        Total: parseInt(d.total_solicitacoes) || 0,
     }));
 
     const solPorEmpresa = (dados.solicitacoes_por_empresa || []).map(d => ({
-        empresa: d.nome_fantasia.length > 18 ? d.nome_fantasia.slice(0, 18) + '…' : d.nome_fantasia,
+        empresa: truncar(d.nome_fantasia),
         Realizada: parseInt(d.realizada) || 0,
         Aprovada: parseInt(d.aprovada) || 0,
         Negada: parseInt(d.negada) || 0,
@@ -394,7 +399,7 @@ function AbaEmpresas({ dados, kc }) {
     }));
 
     const expiracao = (dados.expiracao_por_empresa || []).map(d => ({
-        empresa: d.nome_fantasia.length > 18 ? d.nome_fantasia.slice(0, 18) + '…' : d.nome_fantasia,
+        empresa: truncar(d.nome_fantasia),
         'Taxa (%)': parseFloat(d.taxa_expiracao) || 0,
     }));
 
@@ -476,12 +481,12 @@ function AbaEmpresas({ dados, kc }) {
 function AbaFluxo({ dados }) {
     const f = dados.funil || {};
     const etapas = [
-        dados.funil?.registradas,
-        dados.funil?.em_atendimento,
-        dados.funil?.com_solicitacao,
-        dados.funil?.coleta_aprovada,
-        dados.funil?.coleta_confirmada,
-        dados.funil?.resolvidas,
+        f.registradas,
+        f.em_atendimento,
+        f.com_solicitacao,
+        f.coleta_aprovada,
+        f.coleta_confirmada,
+        f.resolvidas,
     ];
     const max = Math.max(...etapas.map(v => parseInt(v) || 0), 1);
 
@@ -503,7 +508,7 @@ function AbaFluxo({ dados }) {
 
     const reabertas = (dados.reabertas || []).map(d => ({
         id: `#${d.id}`,
-        'Expirações': parseInt(d.vezes_expirou),
+        'Expirações': parseInt(d.vezes_expirou) || 0,
     }));
 
     return (
@@ -569,10 +574,10 @@ function AbaFluxo({ dados }) {
 // ─── ABA 5: MONITORAMENTO ────────────────────────────────────────────────────
 function AbaMonitoramento({ dados, kc }) {
     const crescOcorr = (dados.crescimento_ocorrencias || []).map(d => ({
-        mes: d.mes, 'Novas no mês': parseInt(d.novas_no_mes), 'Acumulado': parseInt(d.acumulado)
+        mes: d.mes, 'Novas no mês': parseInt(d.novas_no_mes) || 0, 'Acumulado': parseInt(d.acumulado) || 0
     }));
     const crescEmp = (dados.crescimento_empresas || []).map(d => ({
-        mes: d.mes, 'Novas no mês': parseInt(d.novas_no_mes), 'Acumulado': parseInt(d.acumulado)
+        mes: d.mes, 'Novas no mês': parseInt(d.novas_no_mes) || 0, 'Acumulado': parseInt(d.acumulado) || 0
     }));
 
     const porDia = (dados.por_dia_semana || []).map(d => ({
