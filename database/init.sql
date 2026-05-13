@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     is_temp_password BOOLEAN DEFAULT false,
+    role VARCHAR(20) DEFAULT 'gestor',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -124,7 +125,7 @@ INSERT INTO public.categories (nome) VALUES
 ('Móveis'), ('Lixo Doméstico'), ('Hospitalar'), ('Outros')
 ON CONFLICT (nome) DO NOTHING;
 
--- Usuário Admin Padrão (Login via CPF)
-INSERT INTO public.users (cpf, email, password, is_temp_password) 
-VALUES ('000.000.000-00', 'admin@greeneye.com', '$2b$10$CznwWKZSW/9SForJJMAu4e8GihPjFEWDG3vCTOQXTrqSWXVXMMBu', false)
+-- Super Admin padrão (único usuário seed — cria gestores pelo painel)
+INSERT INTO public.users (cpf, email, password, is_temp_password, role)
+VALUES ('00000000000', 'admin@greeneye.com', '$2b$10$CznwWKZSW/9SForJJMAu4e8GihPjFEWDG3vCTOQXTrqSWXVXMMBu', false, 'superadmin')
 ON CONFLICT (cpf) DO NOTHING;

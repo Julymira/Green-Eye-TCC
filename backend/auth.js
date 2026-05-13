@@ -10,11 +10,18 @@ const verifyToken = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; // Salva os dados do usuário (id e tipo) na requisição
+        req.user = decoded;
         next();
     } catch (err) {
         return res.status(401).json({ error: "Token inválido ou expirado." });
     }
 };
 
-module.exports = { verifyToken };
+const requireSuperAdmin = (req, res, next) => {
+    if (req.user?.role !== 'superadmin') {
+        return res.status(403).json({ error: "Acesso restrito ao Super Admin." });
+    }
+    next();
+};
+
+module.exports = { verifyToken, requireSuperAdmin };

@@ -25,13 +25,15 @@ function Login() {
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('userType', 'admin');
             localStorage.setItem('userEmail', response.data.user.email);
-            
-            // Forçamos o 'true' ou 'false' a virar texto:
+            localStorage.setItem('userRole', response.data.user.role);
             localStorage.setItem('needsPasswordChange', String(response.data.user.needsPasswordChange));
 
             if (response.data.user.needsPasswordChange === true) {
                 toast('Atenção: Sua senha é temporária e precisa ser alterada agora.', { icon: '🚩' });
                 navigate('/change-password');
+            } else if (response.data.user.role === 'superadmin') {
+                toast.success('Bem-vindo, Super Admin!');
+                navigate('/superadmin');
             } else {
                 toast.success('Login realizado!');
                 navigate('/admin');
