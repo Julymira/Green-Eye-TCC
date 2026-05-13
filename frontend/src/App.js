@@ -20,6 +20,7 @@ import HistoricoEmpresa from './HistoricoEmpresa';
 import Relatorios from './Relatorios';
 import NovaOcorrenciaGestor from './NovaOcorrenciaGestor';
 import PainelSuperAdmin from './PainelSuperAdmin';
+import TutorialSuperAdmin from './TutorialSuperAdmin';
 
 // --- NOVO: Layout para as páginas públicas (Com a Navbar padrão) ---
 function LayoutPublico() {
@@ -67,6 +68,7 @@ function App() {
           <Route path="/admin/relatorios" element={<Relatorios />} />
           <Route path="/admin/nova-ocorrencia" element={<NovaOcorrenciaGestor />} />
           <Route path="/superadmin" element={<PainelSuperAdmin />} />
+          <Route path="/superadmin/tutorial" element={<TutorialSuperAdmin />} />
           <Route path="/dashboard-empresa" element={<DashboardCompany />} />
           <Route path="/dashboard-empresa/tutorial" element={<TutorialEmpresa />} />
           <Route path="/dashboard-empresa/historico" element={<HistoricoEmpresa />} />

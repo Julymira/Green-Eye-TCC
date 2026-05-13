@@ -102,6 +102,9 @@ function PainelSuperAdmin() {
                     🛡️ Painel Super Admin
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <button onClick={() => navigate('/superadmin/tutorial')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
+                        📖 Tutorial
+                    </button>
                     <button onClick={() => navigate('/admin')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
                         📊 Painel Gestor
                     </button>
