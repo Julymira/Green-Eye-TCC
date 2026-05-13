@@ -75,7 +75,7 @@ function Mapa() {
     }, []);
 
     return (
-        <div style={{ position: 'relative' }}>
+        <div className="map-div">
             <MapContainer center={[-16.2531, -47.9503]} zoom={13} style={{ height: '500px', width: '100%' }}>
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

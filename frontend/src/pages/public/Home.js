@@ -18,7 +18,7 @@ function Home() {
       </section>
 
       {/* 2. O Mapa */}
-      <Mapa />
+        <Mapa />
 
       {/* 3. Seção "O que você pode fazer aqui?" COM TÍTULO E BOTÕES */}
       <section className="steps-section">
