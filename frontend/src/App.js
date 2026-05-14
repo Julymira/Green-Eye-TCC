@@ -25,6 +25,7 @@ import PontosColeta from './pages/public/PontosColeta';
 import GestaoPontosColeta from './pages/gestor/GestaoPontosColeta';
 import Sobre from './pages/public/Sobre';
 import Rodape from './componentes/Rodape';
+import RodapeSimples from './componentes/RodapeSimples';
 
 // --- NOVO: Layout para as páginas públicas (Com a Navbar padrão) ---
 function LayoutPublico() {
@@ -49,6 +50,15 @@ function LayoutPublico() {
   );
 }
 
+function LayoutInterno() {
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Outlet />
+      <RodapeSimples />
+    </div>
+  );
+}
+
 function App() {
   return (
     <Router>
@@ -69,18 +79,20 @@ function App() {
 
           </Route>
 
-          {/* GRUPO 2: Área Admin (Sem Layout padrão, usa a própria Navbar) */}
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="/admin/tutorial" element={<TutorialGestor />} />
-          <Route path="/admin/historico" element={<HistoricoGestor />} />
-          <Route path="/admin/relatorios" element={<Relatorios />} />
-          <Route path="/admin/nova-ocorrencia" element={<NovaOcorrenciaGestor />} />
-          <Route path="/admin/pontos-coleta" element={<GestaoPontosColeta />} />
-          <Route path="/superadmin" element={<PainelSuperAdmin />} />
-          <Route path="/superadmin/tutorial" element={<TutorialSuperAdmin />} />
-          <Route path="/dashboard-empresa" element={<DashboardCompany />} />
-          <Route path="/dashboard-empresa/tutorial" element={<TutorialEmpresa />} />
-          <Route path="/dashboard-empresa/historico" element={<HistoricoEmpresa />} />
+          {/* GRUPO 2: Área Interna (Gestor, SuperAdmin, Empresa) */}
+          <Route element={<LayoutInterno />}>
+            <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/tutorial" element={<TutorialGestor />} />
+            <Route path="/admin/historico" element={<HistoricoGestor />} />
+            <Route path="/admin/relatorios" element={<Relatorios />} />
+            <Route path="/admin/nova-ocorrencia" element={<NovaOcorrenciaGestor />} />
+            <Route path="/admin/pontos-coleta" element={<GestaoPontosColeta />} />
+            <Route path="/superadmin" element={<PainelSuperAdmin />} />
+            <Route path="/superadmin/tutorial" element={<TutorialSuperAdmin />} />
+            <Route path="/dashboard-empresa" element={<DashboardCompany />} />
+            <Route path="/dashboard-empresa/tutorial" element={<TutorialEmpresa />} />
+            <Route path="/dashboard-empresa/historico" element={<HistoricoEmpresa />} />
+          </Route>
 
         </Routes>
       </div>
