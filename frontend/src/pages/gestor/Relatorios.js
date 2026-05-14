@@ -60,6 +60,7 @@ const dias = v => v != null ? `${v} dias` : '—';
 export default function Relatorios() {
     const navigate = useNavigate();
     const [dados, setDados] = useState(null);
+    const [pontos, setPontos] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [aba, setAba] = useState(0);
 
@@ -67,10 +68,16 @@ export default function Relatorios() {
         const token = localStorage.getItem('token');
         if (!token) { navigate('/'); return; }
         try {
-            const res = await axios.get('http://localhost:3000/api/reports/estatisticas', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setDados(res.data);
+            const [resEstat, resPontos] = await Promise.all([
+                axios.get('http://localhost:3000/api/reports/estatisticas', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                fetch('http://localhost:3000/api/pontos-coleta/todos', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }).then(r => r.json()).catch(() => [])
+            ]);
+            setDados(resEstat.data);
+            setPontos(Array.isArray(resPontos) ? resPontos : []);
         } catch {
             toast.error('Erro ao carregar estatísticas.');
         } finally {
@@ -88,6 +95,7 @@ export default function Relatorios() {
         '🔄 Fluxo',
         '📡 Monitoramento',
         '🔗 Unificações',
+        '📍 Pontos de Descarte',
     ];
 
     if (carregando) return (
@@ -144,6 +152,9 @@ export default function Relatorios() {
 
                 {/* ── ABA 6: UNIFICAÇÕES ── */}
                 {aba === 6 && <AbaUnificacoes dados={dados} k={k} />}
+
+                {/* ── ABA 7: PONTOS DE DESCARTE ── */}
+                {aba === 7 && <AbaPontosDescarte pontos={pontos} />}
             </div>
         </div>
     );
@@ -662,6 +673,188 @@ function AbaMonitoramento({ dados, kc }) {
                                     <td style={{ padding: '9px 10px', fontSize: '13px', color: '#555' }}>{Number(l.lng_grid).toFixed(3)}</td>
                                     <td style={{ padding: '9px 10px', fontSize: '13px', fontWeight: 'bold', color: '#c62828' }}>{l.total}</td>
                                     <td style={{ padding: '9px 10px', fontSize: '13px', color: '#f57c00', fontWeight: 'bold' }}>{l.peso_total}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </Secao>
+        </>
+    );
+}
+
+// ─── ABA 7: PONTOS DE DESCARTE ───────────────────────────────────────────────
+const TIPOS_CORES = {
+    'Eletrônico': '#1565c0', 'Orgânico': '#2e7d32', 'Entulho': '#795548',
+    'Pneus': '#424242', 'Móveis': '#6a1b9a', 'Lixo Doméstico': '#f57c00',
+    'Hospitalar': '#c62828', 'Reciclável': '#00838f', 'Outros': '#757575',
+};
+
+function AbaPontosDescarte({ pontos }) {
+    const ativos = pontos.filter(p => p.ativo);
+    const inativos = pontos.filter(p => !p.ativo);
+    const comCoordenadas = pontos.filter(p => p.lat && p.lng);
+
+    // Pontos por cidade
+    const porCidade = Object.entries(
+        pontos.reduce((acc, p) => { acc[p.cidade] = (acc[p.cidade] || 0) + 1; return acc; }, {})
+    ).map(([cidade, total]) => ({ cidade, total })).sort((a, b) => b.total - a.total);
+
+    // Pontos por tipo de resíduo
+    const porTipo = {};
+    pontos.forEach(p => (p.tipos_residuo || []).forEach(t => { porTipo[t] = (porTipo[t] || 0) + 1; }));
+    const porTipoData = Object.entries(porTipo)
+        .map(([tipo, total]) => ({ tipo, total }))
+        .sort((a, b) => b.total - a.total);
+
+    // Cobertura: quais tipos têm pelo menos 1 ponto ativo
+    const tiposComCobertura = new Set(ativos.flatMap(p => p.tipos_residuo || []));
+    const todosTipos = Object.keys(TIPOS_CORES);
+    const tiposSemCobertura = todosTipos.filter(t => !tiposComCobertura.has(t));
+
+    // Ativa por cidade
+    const ativosPorCidade = Object.entries(
+        ativos.reduce((acc, p) => { acc[p.cidade] = (acc[p.cidade] || 0) + 1; return acc; }, {})
+    ).map(([cidade, ativos]) => ({ cidade, Ativos: ativos })).sort((a, b) => b.Ativos - a.Ativos);
+
+    return (
+        <>
+            <Secao titulo="📍 KPIs — Pontos de Descarte">
+                <Row>
+                    <KpiCard valor={pontos.length} label="Total Cadastrado" cor="#1565c0" />
+                    <KpiCard valor={ativos.length} label="Pontos Ativos" cor={VERDE} />
+                    <KpiCard valor={inativos.length} label="Pontos Inativos" cor="#9e9e9e" />
+                    <KpiCard valor={comCoordenadas.length} label="Com Localização no Mapa" cor="#00838f" />
+                    <KpiCard valor={new Set(pontos.map(p => p.cidade)).size} label="Cidades Cobertas" cor="#f57c00" />
+                    <KpiCard valor={tiposComCobertura.size} label={`Tipos Cobertos / ${todosTipos.length}`} cor="#6a1b9a" />
+                </Row>
+            </Secao>
+
+            <Secao titulo="🏙️ Pontos por Cidade">
+                <Row>
+                    <GraficoCard titulo="Total de pontos cadastrados por cidade" height={Math.max(180, porCidade.length * 44)}>
+                        <BarChart data={porCidade} layout="vertical">
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis type="number" allowDecimals={false} />
+                            <YAxis dataKey="cidade" type="category" tick={{ fontSize: 12 }} width={120} />
+                            <Tooltip />
+                            <Bar dataKey="total" name="Pontos" fill="#1565c0" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                    </GraficoCard>
+
+                    <GraficoCard titulo="Pontos ativos por cidade" height={Math.max(180, ativosPorCidade.length * 44)}>
+                        <BarChart data={ativosPorCidade} layout="vertical">
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis type="number" allowDecimals={false} />
+                            <YAxis dataKey="cidade" type="category" tick={{ fontSize: 12 }} width={120} />
+                            <Tooltip />
+                            <Bar dataKey="Ativos" fill={VERDE} radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                    </GraficoCard>
+                </Row>
+            </Secao>
+
+            <Secao titulo="♻️ Cobertura por Tipo de Resíduo">
+                <Row>
+                    <GraficoCard titulo="Quantos pontos aceitam cada tipo de resíduo" height={300}>
+                        <BarChart data={porTipoData} layout="vertical">
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis type="number" allowDecimals={false} />
+                            <YAxis dataKey="tipo" type="category" tick={{ fontSize: 11 }} width={110} />
+                            <Tooltip />
+                            <Bar dataKey="total" name="Pontos" radius={[0, 4, 4, 0]}>
+                                {porTipoData.map((d, i) => (
+                                    <Cell key={i} fill={TIPOS_CORES[d.tipo] || '#757575'} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </GraficoCard>
+
+                    <GraficoCard titulo="Distribuição por tipo (pizza)" height={300}>
+                        <PieChart>
+                            <Pie data={porTipoData} dataKey="total" nameKey="tipo" cx="50%" cy="50%" outerRadius={100}
+                                label={({ tipo, percent }) => percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''}>
+                                {porTipoData.map((d, i) => (
+                                    <Cell key={i} fill={TIPOS_CORES[d.tipo] || CORES[i % CORES.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip formatter={(v, name, props) => [v, props.payload.tipo]} />
+                            <Legend formatter={(_, entry) => entry.payload.tipo} />
+                        </PieChart>
+                    </GraficoCard>
+                </Row>
+
+                {tiposSemCobertura.length > 0 && (
+                    <div style={{
+                        background: '#fff3e0', border: '1px solid #ffb74d', borderRadius: '8px',
+                        padding: '14px 18px', marginTop: '4px'
+                    }}>
+                        <strong style={{ color: '#e65100' }}>⚠️ Tipos sem cobertura ativa:</strong>
+                        <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                            {tiposSemCobertura.map(t => (
+                                <span key={t} style={{
+                                    padding: '4px 12px', borderRadius: '20px', fontSize: '12px',
+                                    background: (TIPOS_CORES[t] || '#757575') + '18',
+                                    color: TIPOS_CORES[t] || '#757575',
+                                    border: `1px solid ${(TIPOS_CORES[t] || '#757575')}44`,
+                                    fontWeight: 'bold'
+                                }}>{t}</span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </Secao>
+
+            <Secao titulo="📋 Lista Completa de Pontos">
+                <div style={{ background: 'white', borderRadius: '8px', border: '1px solid #e0e0e0', overflow: 'hidden' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                        <thead>
+                            <tr style={{ background: '#f1f8e9' }}>
+                                {['Nome', 'Cidade', 'Tipos Aceitos', 'Horário', 'GPS', 'Status'].map(h => (
+                                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', color: VERDE, fontWeight: 'bold', borderBottom: '2px solid #c5e1a5' }}>{h}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {pontos.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: '#aaa' }}>
+                                        Nenhum ponto cadastrado ainda.
+                                    </td>
+                                </tr>
+                            ) : pontos.map((p, i) => (
+                                <tr key={p.id} style={{ borderBottom: '1px solid #f0f0f0', background: i % 2 === 0 ? 'white' : '#fafafa' }}>
+                                    <td style={{ padding: '10px 14px', fontWeight: 'bold', color: '#1b5e20' }}>{p.nome}</td>
+                                    <td style={{ padding: '10px 14px', color: '#555' }}>{p.cidade}</td>
+                                    <td style={{ padding: '10px 14px' }}>
+                                        {(p.tipos_residuo || []).length > 0
+                                            ? (p.tipos_residuo || []).map(t => (
+                                                <span key={t} style={{
+                                                    display: 'inline-block', margin: '1px 2px', padding: '2px 8px',
+                                                    borderRadius: '12px', fontSize: '11px', fontWeight: 'bold',
+                                                    background: (TIPOS_CORES[t] || '#757575') + '18',
+                                                    color: TIPOS_CORES[t] || '#757575'
+                                                }}>{t}</span>
+                                            ))
+                                            : <span style={{ color: '#bbb' }}>—</span>
+                                        }
+                                    </td>
+                                    <td style={{ padding: '10px 14px', color: '#555' }}>{p.horario || '—'}</td>
+                                    <td style={{ padding: '10px 14px', color: '#555' }}>
+                                        {p.lat && p.lng
+                                            ? <span style={{ color: VERDE, fontWeight: 'bold' }}>✓</span>
+                                            : <span style={{ color: '#bbb' }}>—</span>
+                                        }
+                                    </td>
+                                    <td style={{ padding: '10px 14px' }}>
+                                        <span style={{
+                                            padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold',
+                                            background: p.ativo ? '#e8f5e9' : '#fbe9e7',
+                                            color: p.ativo ? '#2e7d32' : '#c62828'
+                                        }}>
+                                            {p.ativo ? 'Ativo' : 'Inativo'}
+                                        </span>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
