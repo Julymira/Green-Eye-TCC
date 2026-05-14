@@ -98,7 +98,22 @@ CREATE TABLE IF NOT EXISTS public.company_categories (
     PRIMARY KEY (company_id, category_id)
 );
 
--- 7. ÍNDICES E OTIMIZAÇÃO ESPACIAL
+-- 7. TABELA DE PONTOS DE COLETA (Locais de descarte correto)
+CREATE TABLE IF NOT EXISTS public.pontos_coleta (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    endereco TEXT NOT NULL,
+    cidade VARCHAR(100) NOT NULL,
+    telefone VARCHAR(30),
+    horario VARCHAR(150),
+    lat DOUBLE PRECISION,
+    lng DOUBLE PRECISION,
+    tipos_residuo TEXT[] DEFAULT '{}',
+    ativo BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 8. ÍNDICES E OTIMIZAÇÃO ESPACIAL
 CREATE INDEX IF NOT EXISTS idx_reports_localizacao 
 ON public.reports USING GIST (localizacao);
 

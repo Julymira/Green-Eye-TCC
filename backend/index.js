@@ -6,6 +6,7 @@ const pool = require('./config/db');
 const adminUsersRouter = require('./routes/admin_users');
 const ocorrenciasRouter = require('./routes/ocorrencias');
 const companiesRouter = require('./routes/companies');
+const pontosColetaRouter = require('./routes/pontos_coleta');
 
 const path = require('path');
 const app = express();
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/api/admin', adminUsersRouter);
 app.use('/api/reports', ocorrenciasRouter);
 app.use('/api/companies', companiesRouter);
+app.use('/api/pontos-coleta', pontosColetaRouter);
 
 
 // Testa a conexão imediatamente ao iniciar

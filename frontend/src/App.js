@@ -21,6 +21,8 @@ import Relatorios from './pages/gestor/Relatorios';
 import NovaOcorrenciaGestor from './pages/gestor/NovaOcorrenciaGestor';
 import PainelSuperAdmin from './pages/superadmin/PainelSuperAdmin';
 import TutorialSuperAdmin from './pages/superadmin/TutorialSuperAdmin';
+import PontosColeta from './pages/public/PontosColeta';
+import GestaoPontosColeta from './pages/gestor/GestaoPontosColeta';
 
 // --- NOVO: Layout para as páginas públicas (Com a Navbar padrão) ---
 function LayoutPublico() {
@@ -34,6 +36,7 @@ function LayoutPublico() {
           <Link to="/ocorrencia">Nova Ocorrência</Link>
           <Link to="/login-empresa">Empresas</Link> 
           <Link to="/login">Gestores</Link>
+          <Link to="/pontos-coleta">Pontos de Coleta</Link>
         </div>
       </nav>
       
@@ -58,7 +61,8 @@ function App() {
           <Route path="/cadastro-empresa" element={<RegisterCompany />} />
           <Route path="/login-empresa" element={<LoginCompany />} />
           <Route path="/change-password" element={<ChangePassword />} />
-            
+          <Route path="/pontos-coleta" element={<PontosColeta />} />
+
           </Route>
 
           {/* GRUPO 2: Área Admin (Sem Layout padrão, usa a própria Navbar) */}
@@ -67,6 +71,7 @@ function App() {
           <Route path="/admin/historico" element={<HistoricoGestor />} />
           <Route path="/admin/relatorios" element={<Relatorios />} />
           <Route path="/admin/nova-ocorrencia" element={<NovaOcorrenciaGestor />} />
+          <Route path="/admin/pontos-coleta" element={<GestaoPontosColeta />} />
           <Route path="/superadmin" element={<PainelSuperAdmin />} />
           <Route path="/superadmin/tutorial" element={<TutorialSuperAdmin />} />
           <Route path="/dashboard-empresa" element={<DashboardCompany />} />
