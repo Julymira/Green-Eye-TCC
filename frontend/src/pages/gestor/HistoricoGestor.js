@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import NavbarInterna from '../../componentes/NavbarInterna';
 
 export default function HistoricoGestor() {
     const navigate = useNavigate();
@@ -32,16 +33,7 @@ export default function HistoricoGestor() {
 
     return (
         <div>
-            <nav className="navbar">
-                <div className="brand" style={{ color: 'white', fontSize: '20px', fontWeight: 'bold' }}>
-                    📊 Painel do Gestor
-                </div>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <button onClick={() => navigate('/admin')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        ← Voltar ao Painel
-                    </button>
-                </div>
-            </nav>
+            <NavbarInterna tipo="gestor" paginaAtual="historico" />
 
             <div style={{ padding: '30px', maxWidth: '1200px', margin: '0 auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>

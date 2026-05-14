@@ -1,6 +1,7 @@
 // src/Dashboard.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import NavbarInterna from '../../componentes/NavbarInterna';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -328,37 +329,7 @@ function Dashboard() {
 
     return (
         <div>
-            {/* NAVBAR */}
-            <nav className="navbar">
-                <div className="brand" style={{color: 'white', fontSize: '20px', fontWeight: 'bold'}}>
-                    📊 Painel do Gestor
-                </div>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    {localStorage.getItem('userRole') === 'superadmin' && (
-                        <button onClick={() => navigate('/superadmin')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            🛡️ Super Admin
-                        </button>
-                    )}
-                    <button onClick={() => navigate('/admin/nova-ocorrencia')} style={{ background: 'white', color: '#2e7d32', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        ➕ Nova Ocorrência
-                    </button>
-                    <button onClick={() => navigate('/admin/pontos-coleta')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        ♻️ Pontos de Coleta
-                    </button>
-                    <button onClick={() => navigate('/admin/relatorios')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        📈 Relatórios
-                    </button>
-                    <button onClick={() => navigate('/admin/historico')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        📋 Histórico
-                    </button>
-                    <button onClick={() => navigate('/admin/tutorial')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        📖 Tutorial
-                    </button>
-                    <button onClick={handleLogout} className="btn-logout" style={{ background: 'white', color: '#c62828', border: 'none', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        Sair (Logout)
-                    </button>
-                </div>
-            </nav>
+            <NavbarInterna tipo="gestor" paginaAtual="painel" />
 
             <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
                 

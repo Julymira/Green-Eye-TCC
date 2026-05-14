@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { gerarPDF } from '../../utils/gerarPDF';
+import NavbarInterna from '../../componentes/NavbarInterna';
 import {
     LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -116,7 +117,7 @@ export default function Relatorios() {
 
     if (carregando) return (
         <div>
-            <NavbarRelatorio navigate={navigate} />
+            <NavbarInterna tipo="gestor" paginaAtual="relatorios" />
             <div style={{ padding: '60px', textAlign: 'center', color: '#888' }}>Carregando estatísticas...</div>
         </div>
     );
@@ -128,7 +129,7 @@ export default function Relatorios() {
 
     return (
         <div>
-            <NavbarRelatorio navigate={navigate} />
+            <NavbarInterna tipo="gestor" paginaAtual="relatorios" />
 
             <div style={{ padding: '28px', maxWidth: '1300px', margin: '0 auto' }}>
                 <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
@@ -192,17 +193,6 @@ export default function Relatorios() {
     );
 }
 
-// ─── NAVBAR ──────────────────────────────────────────────────────────────────
-function NavbarRelatorio({ navigate }) {
-    return (
-        <nav className="navbar">
-            <div className="brand" style={{ color: 'white', fontSize: '20px', fontWeight: 'bold' }}>📊 Painel do Gestor</div>
-            <button onClick={() => navigate('/admin')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                ← Voltar ao Painel
-            </button>
-        </nav>
-    );
-}
 
 // ─── ABA 0: VISÃO GERAL ──────────────────────────────────────────────────────
 function AbaVisaoGeral({ k, kc, dados }) {

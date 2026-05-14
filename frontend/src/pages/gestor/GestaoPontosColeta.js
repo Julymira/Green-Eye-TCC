@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import NavbarInterna from '../../componentes/NavbarInterna';
 
 const TIPOS_INFO = {
     'Eletrônico':     { cor: '#1565c0', emoji: '💻' },
@@ -153,19 +154,7 @@ export default function GestaoPontosColeta() {
 
     return (
         <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
-            {/* NAVBAR */}
-            <nav style={{
-                background: 'linear-gradient(135deg, #2e7d32, #1b5e20)',
-                padding: '12px 24px', display: 'flex', alignItems: 'center',
-                gap: '12px', flexWrap: 'wrap'
-            }}>
-                <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px', marginRight: '16px' }}>
-                    🌿 Green Eye
-                </span>
-                <button onClick={() => navigate('/admin')} style={btnNav}>📊 Painel</button>
-                <button style={{ ...btnNav, background: 'rgba(255,255,255,0.2)' }}>♻️ Pontos de Coleta</button>
-                <button onClick={() => { localStorage.clear(); navigate('/login'); }} style={{ ...btnNav, marginLeft: 'auto' }}>Sair</button>
-            </nav>
+            <NavbarInterna tipo="gestor" paginaAtual="pontos-coleta" />
 
             <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '30px 20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>

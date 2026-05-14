@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import NavbarInterna from '../../componentes/NavbarInterna';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -130,14 +131,7 @@ export default function NovaOcorrenciaGestor() {
 
     return (
         <div>
-            <nav className="navbar">
-                <div className="brand" style={{ color: 'white', fontSize: '20px', fontWeight: 'bold' }}>
-                    📊 Painel do Gestor
-                </div>
-                <button onClick={() => navigate('/admin')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                    ← Voltar ao Painel
-                </button>
-            </nav>
+            <NavbarInterna tipo="gestor" paginaAtual="nova-ocorrencia" />
 
             <div className="ocorrencia-container">
                 <h2 style={{ color: '#2e7d32', textAlign: 'center', marginBottom: '20px', marginTop: '20px' }}>

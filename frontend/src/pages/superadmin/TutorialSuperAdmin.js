@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import NavbarInterna from '../../componentes/NavbarInterna';
 
 const passos = [
     {
@@ -65,18 +66,7 @@ export default function TutorialSuperAdmin() {
 
     return (
         <div>
-            {/* NAVBAR */}
-            <nav className="navbar">
-                <div className="brand" style={{ color: 'white', fontSize: '20px', fontWeight: 'bold' }}>
-                    🛡️ Painel Super Admin
-                </div>
-                <button
-                    onClick={() => navigate('/superadmin')}
-                    style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                    ← Voltar ao Painel
-                </button>
-            </nav>
+            <NavbarInterna tipo="superadmin" paginaAtual="tutorial" />
 
             <div style={{ padding: '30px', maxWidth: '900px', margin: '0 auto' }}>
                 <h1 style={{ color: '#2e7d32', marginBottom: '8px' }}>📖 Tutorial do Super Admin</h1>

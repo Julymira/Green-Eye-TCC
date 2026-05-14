@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import NavbarInterna from '../../componentes/NavbarInterna';
 
 const VERDE = '#2e7d32';
 
@@ -96,23 +97,7 @@ function PainelSuperAdmin() {
 
     return (
         <div>
-            {/* NAVBAR */}
-            <nav className="navbar">
-                <div className="brand" style={{ color: 'white', fontSize: '20px', fontWeight: 'bold' }}>
-                    🛡️ Painel Super Admin
-                </div>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <button onClick={() => navigate('/superadmin/tutorial')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        📖 Tutorial
-                    </button>
-                    <button onClick={() => navigate('/admin')} style={{ background: 'transparent', color: 'white', border: '1px solid white', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        📊 Painel Gestor
-                    </button>
-                    <button onClick={handleLogout} style={{ background: 'white', color: '#c62828', border: 'none', padding: '8px 15px', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        Sair (Logout)
-                    </button>
-                </div>
-            </nav>
+            <NavbarInterna tipo="superadmin" paginaAtual="painel" />
 
             <div style={{ padding: '28px', maxWidth: '900px', margin: '0 auto' }}>
                 <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
