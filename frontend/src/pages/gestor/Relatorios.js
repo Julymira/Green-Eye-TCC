@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { gerarPDF } from '../../utils/gerarPDF';
 import {
     LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -98,6 +99,21 @@ export default function Relatorios() {
         '📍 Pontos de Descarte',
     ];
 
+    const [exportando, setExportando] = useState(false);
+
+    async function handleExportarPDF() {
+        setExportando(true);
+        try {
+            gerarPDF(dados, pontos);
+            toast.success('PDF gerado com sucesso!');
+        } catch (err) {
+            console.error(err);
+            toast.error('Erro ao gerar PDF.');
+        } finally {
+            setExportando(false);
+        }
+    }
+
     if (carregando) return (
         <div>
             <NavbarRelatorio navigate={navigate} />
@@ -115,9 +131,25 @@ export default function Relatorios() {
             <NavbarRelatorio navigate={navigate} />
 
             <div style={{ padding: '28px', maxWidth: '1300px', margin: '0 auto' }}>
-                <div style={{ marginBottom: '24px' }}>
-                    <h1 style={{ color: VERDE, margin: 0 }}>📈 Relatório Estatístico</h1>
-                    <p style={{ color: '#888', margin: '4px 0 0 0', fontSize: '14px' }}>Dados em tempo real do banco de dados</p>
+                <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                    <div>
+                        <h1 style={{ color: VERDE, margin: 0 }}>📈 Relatório Estatístico</h1>
+                        <p style={{ color: '#888', margin: '4px 0 0 0', fontSize: '14px' }}>Dados em tempo real do banco de dados</p>
+                    </div>
+                    <button
+                        onClick={handleExportarPDF}
+                        disabled={exportando}
+                        style={{
+                            background: exportando ? '#a5d6a7' : VERDE,
+                            color: 'white', border: 'none',
+                            padding: '10px 20px', borderRadius: '8px',
+                            fontWeight: 'bold', cursor: exportando ? 'not-allowed' : 'pointer',
+                            fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px',
+                            boxShadow: '0 2px 6px rgba(46,125,50,0.3)'
+                        }}
+                    >
+                        {exportando ? '⏳ Gerando...' : '📄 Exportar PDF'}
+                    </button>
                 </div>
 
                 {/* ABAS */}
