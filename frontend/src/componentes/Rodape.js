@@ -1,5 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+
+const EMAIL = 'julyanamcontato@gmail.com';
+
+function EmailCopiavel({ style }) {
+    const [copiado, setCopiado] = useState(false);
+
+    function copiar() {
+        navigator.clipboard.writeText(EMAIL).then(() => {
+            setCopiado(true);
+            setTimeout(() => setCopiado(false), 2000);
+        });
+    }
+
+    return (
+        <button onClick={copiar} title="Clique para copiar o e-mail" style={{
+            ...style,
+            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+            textAlign: 'left',
+        }}>
+            {copiado ? '✅ Copiado!' : `📧 ${EMAIL}`}
+        </button>
+    );
+}
 
 export default function Rodape() {
     return (
@@ -40,7 +63,7 @@ export default function Rodape() {
                                 <a href="https://www.linkedin.com/in/julymira" target="_blank" rel="noopener noreferrer" style={linkStyle}>💼 LinkedIn</a>
                                 <a href="https://github.com/Julymira" target="_blank" rel="noopener noreferrer" style={linkStyle}>🐙 GitHub</a>
                                 <a href="https://instagram.com/Julymira_" target="_blank" rel="noopener noreferrer" style={linkStyle}>📸 Instagram</a>
-                                <a href="mailto:julyanamcontato@gmail.com" style={linkStyle}>📧 E-mail</a>
+                                <EmailCopiavel style={linkStyle} />
                             </div>
                         </div>
                     </div>

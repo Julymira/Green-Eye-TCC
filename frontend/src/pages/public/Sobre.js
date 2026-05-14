@@ -1,4 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+const EMAIL = 'julyanamcontato@gmail.com';
+
+function BotaoEmail({ style }) {
+    const [copiado, setCopiado] = useState(false);
+
+    function copiar() {
+        navigator.clipboard.writeText(EMAIL).then(() => {
+            setCopiado(true);
+            setTimeout(() => setCopiado(false), 2000);
+        });
+    }
+
+    return (
+        <button
+            onClick={copiar}
+            title="Clique para copiar o e-mail"
+            style={{
+                ...style,
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                padding: '10px 20px', borderRadius: '8px',
+                fontWeight: 'bold', fontSize: '14px',
+                background: copiado ? '#2e7d32' : '#ea4335',
+                color: 'white', border: 'none', cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                transition: 'background 0.2s',
+            }}
+        >
+            {copiado ? `✅ ${EMAIL} copiado!` : `📧 ${EMAIL}`}
+        </button>
+    );
+}
 
 const VERDE = '#2e7d32';
 const VERDE_CLARO = '#e8f5e9';
@@ -77,7 +109,7 @@ export default function Sobre() {
                             <LinkBtn href="https://www.linkedin.com/in/julymira" emoji="💼" label="LinkedIn" cor="#0077b5" />
                             <LinkBtn href="https://github.com/Julymira" emoji="🐙" label="GitHub" cor="#24292e" />
                             <LinkBtn href="https://instagram.com/Julymira_" emoji="📸" label="Instagram" cor="#e1306c" />
-                            <LinkBtn href="mailto:julyanamcontato@gmail.com" emoji="📧" label="E-mail" cor="#ea4335" />
+                            <BotaoEmail />
                         </div>
                     </div>
                 </div>
