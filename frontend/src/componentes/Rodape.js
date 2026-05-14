@@ -7,10 +7,28 @@ function EmailCopiavel({ style }) {
     const [copiado, setCopiado] = useState(false);
 
     function copiar() {
-        navigator.clipboard.writeText(EMAIL).then(() => {
-            setCopiado(true);
-            setTimeout(() => setCopiado(false), 2000);
-        });
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(EMAIL).then(() => {
+                setCopiado(true);
+                setTimeout(() => setCopiado(false), 2000);
+            }).catch(() => copiarFallback());
+        } else {
+            copiarFallback();
+        }
+    }
+
+    function copiarFallback() {
+        const el = document.createElement('textarea');
+        el.value = EMAIL;
+        el.style.position = 'fixed';
+        el.style.opacity = '0';
+        document.body.appendChild(el);
+        el.focus();
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        setCopiado(true);
+        setTimeout(() => setCopiado(false), 2000);
     }
 
     return (
