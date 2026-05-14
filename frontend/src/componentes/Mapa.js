@@ -69,7 +69,7 @@ function Mapa() {
                 }
             })
             .catch(err => {
-                console.error("Erro ao buscar denúncias:", err);
+                console.error("Erro ao buscar ocorrencias:", err);
                 setOcorrencias([]); // Limpa em caso de erro para o mapa carregar vazio
             });
     }, []);

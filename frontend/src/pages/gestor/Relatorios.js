@@ -663,7 +663,7 @@ function AbaMonitoramento({ dados, kc }) {
                 </GraficoCard>
             </Secao>
 
-            <Secao titulo="📅 Padrão de Denúncias — Dia e Hora">
+            <Secao titulo="📅 Padrão de Ocorrências — Dia e Hora">
                 <Row>
                     <GraficoCard titulo="Ocorrências por Dia da Semana">
                         <BarChart data={porDia}>
@@ -918,7 +918,7 @@ function AbaUnificacoes({ dados, k }) {
 
             <Secao titulo="🔗 Unificações por Categoria">
                 <Row>
-                    <GraficoCard titulo="Qual tipo de lixo gera mais denúncias repetidas no mesmo local?">
+                    <GraficoCard titulo="Qual tipo de lixo gera mais ocorrências repetidas no mesmo local?">
                         <BarChart data={uniCat} layout="vertical">
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis type="number" allowDecimals={false} />

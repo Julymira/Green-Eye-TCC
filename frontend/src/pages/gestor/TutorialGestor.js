@@ -53,7 +53,7 @@ const passos = [
     {
         numero: 9,
         titulo: 'Unificação de Ocorrências',
-        descricao: 'Quando múltiplas denúncias forem do mesmo local, selecione-as na tabela e use o botão "Unificar" para agrupá-las em uma única ocorrência principal. Isso evita duplicidade e concentra o peso no heatmap.',
+        descricao: 'Quando múltiplas ocorrências forem do mesmo local, selecione-as na tabela e use o botão "Unificar" para agrupá-las em uma única ocorrência principal. Isso evita duplicidade e concentra o peso no heatmap.',
         icone: '🔗',
     },
     {

@@ -27,7 +27,7 @@ function Home() {
 
         <div className="cards-container">
           
-          {/* CARD 1: Denunciar */}
+          {/* CARD 1: Cadastrar Ocorrência */}
           <div className="card-action">
             <div>
               <h3>📌 1. Cadastrar Ocorrência</h3>

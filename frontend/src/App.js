@@ -23,6 +23,8 @@ import PainelSuperAdmin from './pages/superadmin/PainelSuperAdmin';
 import TutorialSuperAdmin from './pages/superadmin/TutorialSuperAdmin';
 import PontosColeta from './pages/public/PontosColeta';
 import GestaoPontosColeta from './pages/gestor/GestaoPontosColeta';
+import Sobre from './pages/public/Sobre';
+import Rodape from './componentes/Rodape';
 
 // --- NOVO: Layout para as páginas públicas (Com a Navbar padrão) ---
 function LayoutPublico() {
@@ -37,11 +39,12 @@ function LayoutPublico() {
           <Link to="/login-empresa">Empresas</Link> 
           <Link to="/login">Gestores</Link>
           <Link to="/pontos-coleta">Pontos de Coleta</Link>
+          <Link to="/sobre">Sobre</Link>
         </div>
       </nav>
-      
-      {/* O Outlet é onde o React vai desenhar a página filha (Home, Login, etc) */}
+
       <Outlet />
+      <Rodape />
     </>
   );
 }
@@ -62,6 +65,7 @@ function App() {
           <Route path="/login-empresa" element={<LoginCompany />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/pontos-coleta" element={<PontosColeta />} />
+          <Route path="/sobre" element={<Sobre />} />
 
           </Route>
 

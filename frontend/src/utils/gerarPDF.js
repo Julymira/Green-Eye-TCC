@@ -64,7 +64,7 @@ function addRodape(doc) {
         doc.line(14, h - 12, w - 14, h - 12);
         doc.setFontSize(8);
         doc.setTextColor(...CINZA);
-        doc.text('Documento gerado automaticamente pelo Sistema Green Eye - Uso interno e confidencial', 14, h - 6);
+        doc.text('Desenvolvido por Julyana Mira Medeiros  |  Sistema Green Eye - Uso interno e confidencial', 14, h - 6);
         doc.text(`Pagina ${i} de ${total}`, w - 14, h - 6, { align: 'right' });
     }
 }
@@ -118,6 +118,7 @@ function addCapa(doc, gestorEmail, gestorRole) {
         ['Gerado em',          safe(dataFormatada())],
         ['Gestor responsavel', safe(gestorEmail)],
         ['Nivel de acesso',    gestorRole === 'superadmin' ? 'Super Administrador' : 'Gestor'],
+        ['Desenvolvedora',     'Julyana Mira Medeiros'],
         ['Sistema',            'Green Eye v1.0 - TCC 2026'],
         ['Confidencialidade',  'Uso interno - nao divulgar sem autorizacao'],
     ];
