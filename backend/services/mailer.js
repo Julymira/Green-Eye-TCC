@@ -65,4 +65,34 @@ async function sendPasswordResetEmail({ to, nome, resetLink, userType }) {
     return info;
 }
 
-module.exports = { sendPasswordResetEmail };
+async function sendTempPasswordEmail({ to, senha }) {
+    const transport = await getTransporter();
+
+    const info = await transport.sendMail({
+        from: `"Green Eye" <${process.env.MAIL_USER || 'noreply@greeneye.com'}>`,
+        to,
+        subject: 'Seu acesso ao Green Eye — senha temporária',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 30px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                <h2 style="color: #2e7d32;">Green Eye</h2>
+                <p>Olá! Sua conta de gestor foi criada no sistema <strong>Green Eye</strong>.</p>
+                <p>Use as credenciais abaixo para fazer seu primeiro acesso:</p>
+                <div style="background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 16px 20px; margin: 20px 0;">
+                    <p style="margin: 0 0 8px 0;"><strong>E-mail:</strong> ${to}</p>
+                    <p style="margin: 0; font-size: 20px; font-family: monospace; letter-spacing: 2px; color: #2e7d32;"><strong>${senha}</strong></p>
+                </div>
+                <p style="color: #f57c00;"><strong>⚠️ Esta é uma senha temporária.</strong> Você será solicitado a criar uma nova senha no primeiro login.</p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                <p style="font-size: 11px; color: #aaa; text-align: center;">Green Eye — Sistema de Gestão Ambiental</p>
+            </div>
+        `,
+    });
+
+    if (process.env.NODE_ENV !== 'production') {
+        console.log('📧 Preview do e-mail (senha temporária):', nodemailer.getTestMessageUrl(info));
+    }
+
+    return info;
+}
+
+module.exports = { sendPasswordResetEmail, sendTempPasswordEmail };

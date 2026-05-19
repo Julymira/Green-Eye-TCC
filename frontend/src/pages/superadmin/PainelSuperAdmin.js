@@ -14,6 +14,7 @@ function PainelSuperAdmin() {
     const [novoGestor, setNovoGestor] = useState({ email: '', cpf: '', role: 'gestor' });
     const [enviando, setEnviando] = useState(false);
     const [senhaGerada, setSenhaGerada] = useState(null);
+    const [confirmacao, setConfirmacao] = useState(null); // { mensagem, onConfirmar }
 
     const token = localStorage.getItem('token');
 
@@ -68,26 +69,30 @@ function PainelSuperAdmin() {
         }
     };
 
-    const handleResetSenha = async (id, email) => {
-        if (!window.confirm(`Resetar senha de ${email}? Uma nova senha temporária será gerada.`)) return;
-        try {
-            const res = await axios.post(`/api/admin/gestores/${id}/reset-senha`, {}, { headers });
-            toast.success('Senha resetada!');
-            setSenhaGerada(res.data.tempPassword);
-        } catch {
-            toast.error('Erro ao resetar senha.');
-        }
+    const confirmar = (mensagem, onConfirmar) => setConfirmacao({ mensagem, onConfirmar });
+
+    const handleResetSenha = (id, email) => {
+        confirmar(`Resetar senha de ${email}? Uma nova senha temporária será gerada e enviada para o e-mail dele.`, async () => {
+            try {
+                const res = await axios.post(`/api/admin/gestores/${id}/reset-senha`, {}, { headers });
+                toast.success('Senha resetada! E-mail enviado ao gestor.');
+                setSenhaGerada(res.data.tempPassword);
+            } catch {
+                toast.error('Erro ao resetar senha.');
+            }
+        });
     };
 
-    const handleRemover = async (id, email) => {
-        if (!window.confirm(`Remover o gestor ${email}? Esta ação não pode ser desfeita.`)) return;
-        try {
-            await axios.delete(`/api/admin/gestores/${id}`, { headers });
-            toast.success('Gestor removido.');
-            setGestores(prev => prev.filter(g => g.id !== id));
-        } catch {
-            toast.error('Erro ao remover gestor.');
-        }
+    const handleRemover = (id, email) => {
+        confirmar(`Remover o gestor ${email}? Esta ação não pode ser desfeita.`, async () => {
+            try {
+                await axios.delete(`/api/admin/gestores/${id}`, { headers });
+                toast.success('Gestor removido.');
+                setGestores(prev => prev.filter(g => g.id !== id));
+            } catch {
+                toast.error('Erro ao remover gestor.');
+            }
+        });
     };
 
     return (
@@ -191,6 +196,29 @@ function PainelSuperAdmin() {
                     )}
                 </div>
             </div>
+
+            {/* MODAL: CONFIRMAÇÃO */}
+            {confirmacao && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }}>
+                    <div style={{ background: 'white', borderRadius: '10px', padding: '28px', width: '100%', maxWidth: '400px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+                        <p style={{ margin: '0 0 24px 0', fontSize: '15px', color: '#333', lineHeight: '1.5' }}>{confirmacao.mensagem}</p>
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={() => setConfirmacao(null)}
+                                style={{ padding: '9px 20px', borderRadius: '6px', border: '1px solid #ccc', background: '#f5f5f5', color: '#555', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={() => { confirmacao.onConfirmar(); setConfirmacao(null); }}
+                                style={{ padding: '9px 20px', borderRadius: '6px', border: 'none', background: '#c62828', color: 'white', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
+                            >
+                                Confirmar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* MODAL: NOVO GESTOR */}
             {modalAberto && (

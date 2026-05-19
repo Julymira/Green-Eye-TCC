@@ -4,7 +4,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'minha_chave_secreta_tcc_2026';
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const db = require("../config/db");
-const { sendPasswordResetEmail } = require('../services/mailer');
+const { sendPasswordResetEmail, sendTempPasswordEmail } = require('../services/mailer');
 
 const router = express.Router();
 
@@ -297,6 +297,12 @@ router.post('/gestores', verifyToken, requireSuperAdmin, async (req, res) => {
             [email.toLowerCase(), cpfLimpo, hashedPassword, roleValido]
         );
 
+        try {
+            await sendTempPasswordEmail({ to: email.toLowerCase(), senha: tempPassword });
+        } catch (mailError) {
+            console.error("Erro ao enviar e-mail de senha temporária:", mailError);
+        }
+
         res.status(201).json({
             message: "Gestor criado com sucesso!",
             gestor: result.rows[0],
@@ -333,6 +339,12 @@ router.post('/gestores/:id/reset-senha', verifyToken, requireSuperAdmin, async (
             "UPDATE public.users SET password = $1, is_temp_password = TRUE WHERE id = $2",
             [hashedPassword, idNum]
         );
+
+        try {
+            await sendTempPasswordEmail({ to: result.rows[0].email, senha: tempPassword });
+        } catch (mailError) {
+            console.error("Erro ao enviar e-mail de reset de senha:", mailError);
+        }
 
         res.json({ message: "Senha resetada com sucesso.", tempPassword });
     } catch (error) {
