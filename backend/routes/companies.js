@@ -70,7 +70,7 @@ router.post('/forgot-password', async (req, res) => {
     try {
         const result = await db.query(
             "SELECT id, email_contato, nome_fantasia FROM companies WHERE email_contato = $1",
-            [email]
+            [email.toLowerCase()]
         );
 
         if (result.rows.length === 0) {
@@ -161,10 +161,10 @@ router.post('/', async (req, res) => {
 
         // 2. Insere a Empresa
         const companyRes = await client.query(
-            `INSERT INTO public.companies 
-            (nome_fantasia, cnpj, email_contato, password, telefone, responsavel, is_ong) 
+            `INSERT INTO public.companies
+            (nome_fantasia, cnpj, email_contato, password, telefone, responsavel, is_ong)
             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-            [nome_fantasia, cnpjLimpo, email_contato, hashedPassword, telefone, responsavel, is_ong]
+            [nome_fantasia, cnpjLimpo, email_contato.toLowerCase(), hashedPassword, telefone, responsavel, is_ong]
         );
 
         const companyId = companyRes.rows[0].id;

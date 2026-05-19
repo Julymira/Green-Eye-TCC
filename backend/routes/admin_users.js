@@ -23,7 +23,7 @@ router.post("/register", async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await db.query(
             "INSERT INTO users (email, password, is_temp_password) VALUES ($1, $2, TRUE) RETURNING id, email",
-            [email, hashedPassword]
+            [email.toLowerCase(), hashedPassword]
         );
         res.status(201).json({ message: "Usuário administrador cadastrado com sucesso!", user: result.rows[0] });
     } catch (error) {
@@ -97,7 +97,7 @@ router.post("/change-password", async (req, res) => {
 
     try {
         // Busca pelo email enviado no formulário
-        const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+        const result = await db.query("SELECT * FROM users WHERE email = $1", [email.toLowerCase()]);
 
         if (result.rows.length === 0) {
             return res.status(401).json({ error: "Usuário não encontrado." });
@@ -114,7 +114,7 @@ router.post("/change-password", async (req, res) => {
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
         await db.query(
             "UPDATE users SET password = $1, is_temp_password = FALSE WHERE email = $2",
-            [hashedNewPassword, email]
+            [hashedNewPassword, email.toLowerCase()]
         );
 
         res.json({ message: "Senha alterada com sucesso!" });
@@ -133,7 +133,7 @@ router.post("/generate-temp-password", async (req, res) => {
     }
 
     try {
-        const result = await db.query("SELECT id FROM users WHERE email = $1", [email]);
+        const result = await db.query("SELECT id FROM users WHERE email = $1", [email.toLowerCase()]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: "Usuário não encontrado." });
         }
@@ -143,7 +143,7 @@ router.post("/generate-temp-password", async (req, res) => {
 
         await db.query(
             "UPDATE users SET password = $1, is_temp_password = TRUE WHERE email = $2",
-            [hashedTempPassword, email]
+            [hashedTempPassword, email.toLowerCase()]
         );
 
         res.json({ message: "Senha temporária gerada e atualizada com sucesso.", tempPassword: tempPassword });
@@ -162,7 +162,7 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     try {
-        const result = await db.query("SELECT id, email FROM users WHERE email = $1", [email]);
+        const result = await db.query("SELECT id, email FROM users WHERE email = $1", [email.toLowerCase()]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: "Nenhuma conta encontrada com este e-mail." });
@@ -276,7 +276,7 @@ router.post('/gestores', verifyToken, requireSuperAdmin, async (req, res) => {
 
         const result = await db.query(
             "INSERT INTO public.users (email, cpf, password, is_temp_password, role) VALUES ($1, $2, $3, TRUE, $4) RETURNING id, email, cpf, role",
-            [email, cpfLimpo, hashedPassword, roleValido]
+            [email.toLowerCase(), cpfLimpo, hashedPassword, roleValido]
         );
 
         res.status(201).json({
