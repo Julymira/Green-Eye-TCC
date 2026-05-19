@@ -1,13 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 function ForgotPassword() {
     const [email, setEmail] = useState('');
     const [tipo, setTipo] = useState('user');
-    const [enviado, setEnviado] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [enviado, setEnviado] = useState(false);
+    const [contador, setContador] = useState(60);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!enviado) return;
+        const interval = setInterval(() => {
+            setContador(c => {
+                if (c <= 1) {
+                    clearInterval(interval);
+                    navigate('/');
+                    return 0;
+                }
+                return c - 1;
+            });
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [enviado, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,6 +44,31 @@ function ForgotPassword() {
         }
     };
 
+    if (enviado) {
+        return (
+            <div className="form-container">
+                <div className="form-card" style={{ maxWidth: '400px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>📧</div>
+                    <h2 style={{ color: '#2e7d32' }}>E-mail enviado!</h2>
+                    <p style={{ color: '#555', lineHeight: '1.6' }}>
+                        As instruções de redefinição foram enviadas para <strong>{email}</strong>.
+                    </p>
+                    <p style={{ color: '#888', fontSize: '13px' }}>
+                        Verifique também sua caixa de spam. O link é válido por 1 hora.
+                    </p>
+                    <p style={{ color: '#2e7d32', fontWeight: 'bold', marginTop: '16px' }}>
+                        Redirecionando para a página inicial em {contador}s...
+                    </p>
+                    <div style={{ marginTop: '8px' }}>
+                        <Link to="/" style={{ color: '#4a148c', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+                            ← Ir para o início agora
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     const inputStyle = {
         backgroundColor: '#e3f2fd',
         border: '1px solid #bbdefb'
@@ -40,26 +82,6 @@ function ForgotPassword() {
         display: 'inline-block',
         marginTop: '10px'
     };
-
-    if (enviado) {
-        return (
-            <div className="form-container">
-                <div className="form-card" style={{ maxWidth: '400px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>📧</div>
-                    <h2 style={{ color: '#2e7d32' }}>E-mail enviado!</h2>
-                    <p style={{ color: '#555', lineHeight: '1.6' }}>
-                        Se o e-mail informado estiver cadastrado, você receberá as instruções de redefinição em breve.
-                    </p>
-                    <p style={{ color: '#888', fontSize: '13px' }}>
-                        Verifique também sua caixa de spam. O link é válido por 1 hora.
-                    </p>
-                    <div style={{ marginTop: '20px' }}>
-                        <Link to="/login" style={linkStyle}>← Voltar ao login</Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="form-container">

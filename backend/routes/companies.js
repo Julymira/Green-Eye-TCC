@@ -74,7 +74,7 @@ router.post('/forgot-password', async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.json({ message: "Se o e-mail estiver cadastrado, você receberá as instruções em breve." });
+            return res.status(404).json({ error: "Nenhuma conta encontrada com este e-mail." });
         }
 
         const company = result.rows[0];
