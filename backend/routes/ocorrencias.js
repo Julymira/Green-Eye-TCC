@@ -181,7 +181,8 @@ router.get('/:id/foto', async (req, res) => {
 /*
  * 4. ROTA DE ATUALIZAÇÃO (PUT)
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyToken, async (req, res) => {
+    if (req.user.userType !== 'admin') return res.status(403).json({ error: 'Acesso restrito a administradores.' });
     const idNum = parseInt(req.params.id);
     if (!Number.isInteger(idNum)) {
         return res.status(400).json({ error: 'ID inválido.' });

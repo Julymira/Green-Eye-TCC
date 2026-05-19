@@ -43,20 +43,13 @@ router.post("/login", async (req, res) => {
         // 1. Busca o usuário pelo CPF
         const result = await db.query('SELECT id, email, password, cpf, is_temp_password, role FROM public.users WHERE cpf = $1', [cpf]);
 
-        // 2. Verifica se encontrou alguém
         if (result.rows.length === 0) {
-            console.log("❌ Nenhum usuário encontrado com este CPF no banco.");
             return res.status(401).json({ error: "Credenciais inválidas." });
         }
 
-        // 3. PEGA O PRIMEIRO USUÁRIO DA LISTA (Obrigatório!)
         const user = result.rows[0];
 
-        // 4. TESTE DE LOG (Para você ver no console se os dados chegaram)
-        console.log("✅ Usuário extraído da lista:", user.email);
-        console.log("✅ Hash encontrado:", user.password);
-
-        // 5. COMPARAÇÃO (Agora vai funcionar sem erro de 'arguments required')
+        // 5. COMPARAÇÃO
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {

@@ -64,7 +64,9 @@ router.put('/:id', verifyToken, async (req, res) => {
         return res.status(403).json({ error: 'Acesso restrito a administradores.' });
     }
 
-    const { id } = req.params;
+    const idNum = parseInt(req.params.id);
+    if (!Number.isInteger(idNum)) return res.status(400).json({ error: 'ID inválido.' });
+    const id = idNum;
     const { nome, endereco, cidade, telefone, horario, lat, lng, tipos_residuo, ativo } = req.body;
 
     try {
@@ -92,10 +94,11 @@ router.delete('/:id', verifyToken, async (req, res) => {
         return res.status(403).json({ error: 'Acesso restrito a administradores.' });
     }
 
-    const { id } = req.params;
+    const idNum = parseInt(req.params.id);
+    if (!Number.isInteger(idNum)) return res.status(400).json({ error: 'ID inválido.' });
     try {
         const result = await db.query(
-            'DELETE FROM public.pontos_coleta WHERE id=$1 RETURNING id', [id]
+            'DELETE FROM public.pontos_coleta WHERE id=$1 RETURNING id', [idNum]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Ponto não encontrado.' });

@@ -296,7 +296,8 @@ router.get('/my-matches', verifyToken, async (req, res) => {
 // POST: Empresa solicita coleta de uma ocorrência
 router.post('/requests/:reportId', verifyToken, async (req, res) => {
     const companyId = req.user.id;
-    const { reportId } = req.params;
+    const reportId = parseInt(req.params.reportId);
+    if (!Number.isInteger(reportId)) return res.status(400).json({ error: 'ID inválido.' });
     try {
         const result = await db.query(
             `INSERT INTO public.collection_requests (report_id, company_id, status)
@@ -321,7 +322,8 @@ router.post('/requests/:reportId', verifyToken, async (req, res) => {
 // POST: Empresa confirma que fez a coleta
 router.post('/requests/:requestId/confirm', verifyToken, async (req, res) => {
     const companyId = req.user.id;
-    const { requestId } = req.params;
+    const requestId = parseInt(req.params.requestId);
+    if (!Number.isInteger(requestId)) return res.status(400).json({ error: 'ID inválido.' });
     const client = await db.connect();
     try {
         await client.query('BEGIN');
