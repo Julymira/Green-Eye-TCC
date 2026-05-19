@@ -53,7 +53,7 @@ function Mapa() {
     // Carregar dados
     useEffect(() => {
         // 2. Usamos a URL completa para evitar problemas de porta (3000 vs 3001)
-        fetch('http://localhost:3000/api/reports')
+        fetch('/api/reports')
             .then(res => {
                 // Verifica se a resposta foi bem sucedida (status 200)
                 if (!res.ok) throw new Error("Erro na resposta do servidor");

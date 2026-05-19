@@ -21,7 +21,7 @@ function RegisterCompany() {
 
     // Busca categorias do banco
     useEffect(() => {
-        axios.get('http://localhost:3000/api/companies/categories')
+        axios.get('/api/companies/categories')
             .then(res => setCategories(res.data))
             .catch(err => console.error("Erro ao carregar categorias", err));
     }, []);
@@ -49,10 +49,14 @@ function RegisterCompany() {
             toast.error("Selecione pelo menos uma categoria de coleta.");
             return;
         }
+        if (formData.password.length < 6) {
+            toast.error("A senha deve ter pelo menos 6 caracteres.");
+            return;
+        }
 
         try {
             const payload = { ...formData, categories: selectedCategories };
-            await axios.post('http://localhost:3000/api/companies', payload);
+            await axios.post('/api/companies', payload);
             toast.success("Empresa cadastrada com sucesso!");
             navigate('/login-empresa');
         } catch (error) {

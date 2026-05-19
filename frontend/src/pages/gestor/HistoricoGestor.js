@@ -15,7 +15,7 @@ export default function HistoricoGestor() {
         const token = localStorage.getItem('token');
         if (!token) { navigate('/'); return; }
 
-        axios.get('http://localhost:3000/api/reports/historico', {
+        axios.get('/api/reports/historico', {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then(res => setOcorrencias(res.data))

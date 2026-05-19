@@ -52,7 +52,7 @@ export default function NovaOcorrenciaGestor() {
         const token = localStorage.getItem('token');
         if (!token) { navigate('/'); return; }
 
-        fetch('http://localhost:3000/api/companies/categories')
+        fetch('/api/companies/categories')
             .then(res => res.json())
             .then(data => setCategorias(data))
             .catch(() => toast.error('Erro ao carregar categorias.'));

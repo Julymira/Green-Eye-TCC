@@ -22,7 +22,7 @@ function PainelSuperAdmin() {
     const carregarGestores = useCallback(async () => {
         if (!token) { navigate('/'); return; }
         try {
-            const res = await axios.get('http://localhost:3000/api/admin/gestores', { headers });
+            const res = await axios.get('/api/admin/gestores', { headers });
             setGestores(res.data);
         } catch (err) {
             if (err.response?.status === 403) {
@@ -61,7 +61,7 @@ function PainelSuperAdmin() {
         }
         setEnviando(true);
         try {
-            const res = await axios.post('http://localhost:3000/api/admin/gestores', novoGestor, { headers });
+            const res = await axios.post('/api/admin/gestores', novoGestor, { headers });
             toast.success('Gestor criado com sucesso!');
             setSenhaGerada(res.data.tempPassword);
             setNovoGestor({ email: '', cpf: '' });
@@ -76,7 +76,7 @@ function PainelSuperAdmin() {
     const handleResetSenha = async (id, email) => {
         if (!window.confirm(`Resetar senha de ${email}? Uma nova senha temporária será gerada.`)) return;
         try {
-            const res = await axios.post(`http://localhost:3000/api/admin/gestores/${id}/reset-senha`, {}, { headers });
+            const res = await axios.post(`/api/admin/gestores/${id}/reset-senha`, {}, { headers });
             toast.success('Senha resetada!');
             setSenhaGerada(res.data.tempPassword);
         } catch {
@@ -87,7 +87,7 @@ function PainelSuperAdmin() {
     const handleRemover = async (id, email) => {
         if (!window.confirm(`Remover o gestor ${email}? Esta ação não pode ser desfeita.`)) return;
         try {
-            await axios.delete(`http://localhost:3000/api/admin/gestores/${id}`, { headers });
+            await axios.delete(`/api/admin/gestores/${id}`, { headers });
             toast.success('Gestor removido.');
             setGestores(prev => prev.filter(g => g.id !== id));
         } catch {

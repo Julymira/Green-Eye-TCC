@@ -24,7 +24,7 @@ export default function HistoricoEmpresa() {
         const token = localStorage.getItem('token');
         if (!token) { navigate('/'); return; }
 
-        axios.get('http://localhost:3000/api/companies/my-history', {
+        axios.get('/api/companies/my-history', {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then(res => setSolicitacoes(res.data))

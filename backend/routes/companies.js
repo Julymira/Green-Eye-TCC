@@ -94,14 +94,20 @@ router.post('/forgot-password', async (req, res) => {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         const resetLink = `${frontendUrl}/redefinir-senha?token=${token}&tipo=company`;
 
-        await sendPasswordResetEmail({
-            to: company.email_contato,
-            nome: company.nome_fantasia,
-            resetLink,
-            userType: 'company',
-        });
+        try {
+            await sendPasswordResetEmail({
+                to: company.email_contato,
+                nome: company.nome_fantasia,
+                resetLink,
+                userType: 'company',
+            });
+        } catch (mailError) {
+            console.error("Erro ao enviar e-mail de redefinição:", mailError);
+            await db.query("DELETE FROM password_reset_tokens WHERE token = $1", [token]);
+            return res.status(500).json({ error: "Não foi possível enviar o e-mail. Tente novamente." });
+        }
 
-        res.json({ message: "Se o e-mail estiver cadastrado, você receberá as instruções em breve." });
+        res.json({ message: "E-mail de redefinição enviado com sucesso." });
     } catch (error) {
         console.error("Erro ao solicitar redefinição (empresa):", error);
         res.status(500).json({ error: "Erro interno do servidor." });
@@ -114,6 +120,10 @@ router.post('/reset-password', async (req, res) => {
 
     if (!token || !newPassword) {
         return res.status(400).json({ error: "Token e nova senha são obrigatórios." });
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({ error: "A nova senha deve ter pelo menos 6 caracteres." });
     }
 
     try {
@@ -130,7 +140,7 @@ router.post('/reset-password', async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         await db.query(
-            "UPDATE companies SET password = $1 WHERE id = $2",
+            "UPDATE companies SET password = $1, is_temp_password = FALSE WHERE id = $2",
             [hashedPassword, user_id]
         );
 

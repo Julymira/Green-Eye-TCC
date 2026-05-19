@@ -87,14 +87,14 @@ export default function PontosColeta() {
     const [filtroCidade, setFiltroCidade] = useState('Todas');
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/pontos-coleta')
+        fetch('/api/pontos-coleta')
             .then(res => res.json())
             .then(data => setPontos(Array.isArray(data) ? data : []))
             .catch(() => setPontos([]))
             .finally(() => setCarregando(false));
     }, []);
 
-    const cidades = ['Todas', ...new Set(pontos.map(p => p.cidade))];
+    const cidades = ['Todas', ...new Set(pontos.map(p => p.cidade).filter(Boolean))];
     const tipos = ['Todos', ...Object.keys(TIPOS_INFO)];
 
     const pontosFiltrados = pontos.filter(p => {

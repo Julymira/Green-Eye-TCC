@@ -80,7 +80,7 @@ function DashboardCompany() {
                 return;
             }
 
-            const res = await axios.get('http://localhost:3000/api/companies/my-matches', {
+            const res = await axios.get('/api/companies/my-matches', {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -126,7 +126,7 @@ function DashboardCompany() {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post(`http://localhost:3000/api/companies/requests/${reportId}`, {}, {
+            await axios.post(`/api/companies/requests/${reportId}`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success("Solicitação enviada! Aguarde aprovação do gestor.");
@@ -145,7 +145,7 @@ function DashboardCompany() {
         if (!ok) return;
         try {
             const token = localStorage.getItem('token');
-            await axios.post(`http://localhost:3000/api/companies/requests/${requestId}/confirm`, {}, {
+            await axios.post(`/api/companies/requests/${requestId}/confirm`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success("Coleta confirmada! Obrigado.");

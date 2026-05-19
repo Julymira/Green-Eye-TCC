@@ -13,6 +13,7 @@ function ResetPassword() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [linkValido] = useState(!!(token && tipo));
 
     useEffect(() => {
         if (!token || !tipo) {
@@ -20,6 +21,8 @@ function ResetPassword() {
             navigate('/');
         }
     }, [token, tipo, navigate]);
+
+    if (!linkValido) return null;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -36,8 +39,8 @@ function ResetPassword() {
 
         try {
             const endpoint = tipo === 'company'
-                ? 'http://localhost:3000/api/companies/reset-password'
-                : 'http://localhost:3000/api/admin/reset-password';
+                ? '/api/companies/reset-password'
+                : '/api/admin/reset-password';
 
             await axios.post(endpoint, { token, newPassword });
 

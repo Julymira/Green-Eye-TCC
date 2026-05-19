@@ -10,11 +10,16 @@ function LoginCompany() {
 
     const handleLogin = async (e) => {
     e.preventDefault();
-    
+
+    const cnpjLimpo = cnpj.replace(/\D/g, '');
+    if (cnpjLimpo.length !== 14) {
+        toast.error('CNPJ inválido. Informe os 14 dígitos.');
+        return;
+    }
+
     try {
-        // 1. Enviamos o CNPJ (pode ser com máscara, o backend vai limpar)
-        const response = await axios.post('http://localhost:3000/api/companies/login', {
-            cnpj: cnpj, // Certifique-se de que o estado se chama 'cnpj'
+        const response = await axios.post('/api/companies/login', {
+            cnpj: cnpjLimpo,
             password: password
         });
 
@@ -75,11 +80,12 @@ function LoginCompany() {
                     <div className="form-group">
                         {/* Mudamos de 'E-mail' para 'CNPJ' para bater com o banco de dados */}
                         <label className="form-label">CNPJ da Empresa</label> 
-                        <input 
-                            type="text" 
-                            className="form-input" 
-                            value={cnpj} // Aqui usamos a variável 'cnpj'
-                            onChange={(e) => setCnpj(e.target.value)} // Aqui atualizamos ela
+                        <input
+                            type="text"
+                            className="form-input"
+                            style={inputStyle}
+                            value={cnpj}
+                            onChange={(e) => setCnpj(e.target.value)}
                             placeholder="00.000.000/0000-00"
                         />
                     </div>

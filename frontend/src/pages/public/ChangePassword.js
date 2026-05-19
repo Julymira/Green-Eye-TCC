@@ -29,7 +29,7 @@ function ChangePassword() {
         }
 
         try {
-            await axios.post('http://localhost:3000/api/admin/change-password', {
+            await axios.post('/api/admin/change-password', {
                 email: formData.email,
                 currentPassword: formData.currentPassword,
                 newPassword: formData.newPassword

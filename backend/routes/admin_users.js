@@ -95,6 +95,14 @@ router.post("/change-password", async (req, res) => {
         return res.status(400).json({ error: "Email, senha atual e nova senha são obrigatórios" });
     }
 
+    if (newPassword.length < 6) {
+        return res.status(400).json({ error: "A nova senha deve ter pelo menos 6 caracteres." });
+    }
+
+    if (newPassword === currentPassword) {
+        return res.status(400).json({ error: "A nova senha deve ser diferente da senha atual." });
+    }
+
     try {
         // Busca pelo email enviado no formulário
         const result = await db.query("SELECT * FROM users WHERE email = $1", [email.toLowerCase()]);
@@ -185,14 +193,20 @@ router.post('/forgot-password', async (req, res) => {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         const resetLink = `${frontendUrl}/redefinir-senha?token=${token}&tipo=user`;
 
-        await sendPasswordResetEmail({
-            to: user.email,
-            nome: user.email,
-            resetLink,
-            userType: 'user',
-        });
+        try {
+            await sendPasswordResetEmail({
+                to: user.email,
+                nome: user.email,
+                resetLink,
+                userType: 'user',
+            });
+        } catch (mailError) {
+            console.error("Erro ao enviar e-mail de redefinição:", mailError);
+            await db.query("DELETE FROM password_reset_tokens WHERE token = $1", [token]);
+            return res.status(500).json({ error: "Não foi possível enviar o e-mail. Tente novamente." });
+        }
 
-        res.json({ message: "Se o e-mail estiver cadastrado, você receberá as instruções em breve." });
+        res.json({ message: "E-mail de redefinição enviado com sucesso." });
     } catch (error) {
         console.error("Erro ao solicitar redefinição de senha:", error);
         res.status(500).json({ error: "Erro interno do servidor." });
@@ -205,6 +219,10 @@ router.post('/reset-password', async (req, res) => {
 
     if (!token || !newPassword) {
         return res.status(400).json({ error: "Token e nova senha são obrigatórios." });
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({ error: "A nova senha deve ter pelo menos 6 caracteres." });
     }
 
     try {
@@ -297,8 +315,13 @@ router.post('/gestores', verifyToken, requireSuperAdmin, async (req, res) => {
 router.post('/gestores/:id/reset-senha', verifyToken, requireSuperAdmin, async (req, res) => {
     const { id } = req.params;
 
+    const idNum = parseInt(id);
+    if (!Number.isInteger(idNum)) {
+        return res.status(400).json({ error: "ID inválido." });
+    }
+
     try {
-        const result = await db.query("SELECT id, email FROM public.users WHERE id = $1 AND id != $2", [id, req.user.id]);
+        const result = await db.query("SELECT id, email FROM public.users WHERE id = $1 AND id != $2", [idNum, req.user.id]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: "Gestor não encontrado." });
         }
@@ -308,7 +331,7 @@ router.post('/gestores/:id/reset-senha', verifyToken, requireSuperAdmin, async (
 
         await db.query(
             "UPDATE public.users SET password = $1, is_temp_password = TRUE WHERE id = $2",
-            [hashedPassword, id]
+            [hashedPassword, idNum]
         );
 
         res.json({ message: "Senha resetada com sucesso.", tempPassword });
@@ -322,7 +345,12 @@ router.post('/gestores/:id/reset-senha', verifyToken, requireSuperAdmin, async (
 router.delete('/gestores/:id', verifyToken, requireSuperAdmin, async (req, res) => {
     const { id } = req.params;
 
-    if (parseInt(id) === req.user.id) {
+    const idNum = parseInt(id);
+    if (!Number.isInteger(idNum)) {
+        return res.status(400).json({ error: "ID inválido." });
+    }
+
+    if (idNum === req.user.id) {
         return res.status(400).json({ error: "Você não pode remover sua própria conta." });
     }
 

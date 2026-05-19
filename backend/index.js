@@ -35,6 +35,20 @@ app.use('/api/pontos-coleta', pontosColetaRouter);
   }
 })();
 
+// Limpeza de tokens de redefinição expirados (roda ao iniciar e a cada hora)
+async function limparTokensExpirados() {
+    try {
+        const result = await pool.query('DELETE FROM password_reset_tokens WHERE expires_at < NOW()');
+        if (result.rowCount > 0) {
+            console.log(`🧹 ${result.rowCount} token(s) expirado(s) removido(s) do banco.`);
+        }
+    } catch (error) {
+        console.error('Erro ao limpar tokens expirados:', error.message);
+    }
+}
+limparTokensExpirados();
+setInterval(limparTokensExpirados, 60 * 60 * 1000);
+
 // GET: Redirecinar para dashboard admin
 app.get("/admin_dashboard.html", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/admin_dashboard.html"));

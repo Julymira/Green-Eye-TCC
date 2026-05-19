@@ -182,8 +182,12 @@ router.get('/:id/foto', async (req, res) => {
  * 4. ROTA DE ATUALIZAÇÃO (PUT)
  */
 router.put('/:id', async (req, res) => {
+    const idNum = parseInt(req.params.id);
+    if (!Number.isInteger(idNum)) {
+        return res.status(400).json({ error: 'ID inválido.' });
+    }
     try {
-        const { id } = req.params;
+        const id = idNum;
         const { status, empresa_selecionada, quantidade, descricao_adicional, problemas_causados } = req.body;
 
         const fields = [];
@@ -243,6 +247,9 @@ router.put('/:id', async (req, res) => {
  * 5. ROTA: Listar solicitações de coleta de uma ocorrência (Gestor)
  */
 router.get('/:id/requests', verifyToken, async (req, res) => {
+    if (req.user.userType !== 'admin') {
+        return res.status(403).json({ error: "Acesso restrito a administradores." });
+    }
     const { id } = req.params;
     try {
         const result = await pool.query(`
@@ -264,6 +271,9 @@ router.get('/:id/requests', verifyToken, async (req, res) => {
  * 6. ROTA: Gestor aprova uma solicitação e define prazo
  */
 router.post('/:id/requests/:requestId/approve', verifyToken, async (req, res) => {
+    if (req.user.userType !== 'admin') {
+        return res.status(403).json({ error: "Acesso restrito a administradores." });
+    }
     const { id, requestId } = req.params;
     const { prazo } = req.body;
     const client = await pool.connect();
@@ -312,6 +322,9 @@ router.post('/:id/requests/:requestId/approve', verifyToken, async (req, res) =>
  * 7. ROTA: Gestor nega uma solicitação
  */
 router.post('/:id/requests/:requestId/deny', verifyToken, async (req, res) => {
+    if (req.user.userType !== 'admin') {
+        return res.status(403).json({ error: "Acesso restrito a administradores." });
+    }
     const { id, requestId } = req.params;
     const client = await pool.connect();
     try {
@@ -350,6 +363,9 @@ router.post('/:id/requests/:requestId/deny', verifyToken, async (req, res) => {
  * 8. ROTA: Gestor finaliza revisão pós-coleta
  */
 router.post('/:id/review-collection', verifyToken, async (req, res) => {
+    if (req.user.userType !== 'admin') {
+        return res.status(403).json({ error: "Acesso restrito a administradores." });
+    }
     const { id } = req.params;
     try {
         await pool.query(
@@ -734,6 +750,9 @@ router.get('/estatisticas', verifyToken, async (req, res) => {
  * 10. ROTA: Histórico de ocorrências resolvidas (Gestor)
  */
 router.get('/historico', verifyToken, async (req, res) => {
+    if (req.user.userType !== 'admin') {
+        return res.status(403).json({ error: "Acesso restrito a administradores." });
+    }
     try {
         const result = await pool.query(`
             SELECT
@@ -776,6 +795,9 @@ router.get('/historico', verifyToken, async (req, res) => {
  * 10. ROTA: Gestor unifica ocorrências repetidas
  */
 router.post('/merge', verifyToken, async (req, res) => {
+    if (req.user.userType !== 'admin') {
+        return res.status(403).json({ error: "Acesso restrito a administradores." });
+    }
     const { principal_id, absorvidas_ids } = req.body;
 
     if (!principal_id || !Array.isArray(absorvidas_ids) || absorvidas_ids.length === 0) {

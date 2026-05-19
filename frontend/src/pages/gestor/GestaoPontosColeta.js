@@ -53,7 +53,7 @@ export default function GestaoPontosColeta() {
     async function carregarPontos() {
         setCarregando(true);
         try {
-            const res = await fetch('http://localhost:3000/api/pontos-coleta/todos', {
+            const res = await fetch('/api/pontos-coleta/todos', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
@@ -110,8 +110,8 @@ export default function GestaoPontosColeta() {
         setSalvando(true);
         try {
             const url = editando
-                ? `http://localhost:3000/api/pontos-coleta/${editando.id}`
-                : 'http://localhost:3000/api/pontos-coleta';
+                ? `/api/pontos-coleta/${editando.id}`
+                : '/api/pontos-coleta';
             const method = editando ? 'PUT' : 'POST';
             const res = await fetch(url, {
                 method,
@@ -140,7 +140,7 @@ export default function GestaoPontosColeta() {
     async function remover(id) {
         if (!window.confirm('Remover este ponto de coleta?')) return;
         try {
-            const res = await fetch(`http://localhost:3000/api/pontos-coleta/${id}`, {
+            const res = await fetch(`/api/pontos-coleta/${id}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` }
             });

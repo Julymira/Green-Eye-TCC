@@ -32,10 +32,10 @@ function ForgotPassword() {
 
         try {
             const endpoint = tipo === 'company'
-                ? 'http://localhost:3000/api/companies/forgot-password'
-                : 'http://localhost:3000/api/admin/forgot-password';
+                ? '/api/companies/forgot-password'
+                : '/api/admin/forgot-password';
 
-            await axios.post(endpoint, { email });
+            await axios.post(endpoint, { email: email.toLowerCase() });
             setEnviado(true);
         } catch (error) {
             toast.error(error.response?.data?.error || 'Erro ao enviar. Tente novamente.');

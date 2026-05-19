@@ -44,7 +44,7 @@ function NovaOcorrencia() {
     const [enviando, setEnviando] = useState(false);
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/companies/categories')
+        fetch('/api/companies/categories')
             .then(res => res.json())
             .then(data => setCategorias(data))
             .catch(err => console.error('Erro ao buscar categorias:', err));

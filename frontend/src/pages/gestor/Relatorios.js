@@ -71,10 +71,10 @@ export default function Relatorios() {
         if (!token) { navigate('/'); return; }
         try {
             const [resEstat, resPontos] = await Promise.all([
-                axios.get('http://localhost:3000/api/reports/estatisticas', {
+                axios.get('/api/reports/estatisticas', {
                     headers: { Authorization: `Bearer ${token}` }
                 }),
-                fetch('http://localhost:3000/api/pontos-coleta/todos', {
+                fetch('/api/pontos-coleta/todos', {
                     headers: { Authorization: `Bearer ${token}` }
                 }).then(r => r.json()).catch(() => [])
             ]);

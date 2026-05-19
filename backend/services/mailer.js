@@ -61,6 +61,8 @@ async function sendPasswordResetEmail({ to, nome, resetLink, userType }) {
     if (process.env.NODE_ENV !== 'production') {
         console.log('📧 Preview do e-mail:', nodemailer.getTestMessageUrl(info));
     }
+
+    return info;
 }
 
 module.exports = { sendPasswordResetEmail };

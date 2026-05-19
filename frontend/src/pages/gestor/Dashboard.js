@@ -112,7 +112,7 @@ function Dashboard() {
     const carregarDados = useCallback(async () => {
         const token = localStorage.getItem('token');
         try {
-            const res = await axios.get('http://localhost:3000/api/reports', {
+            const res = await axios.get('/api/reports', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (Array.isArray(res.data)) {
@@ -148,13 +148,11 @@ function Dashboard() {
     const atualizarStatus = async (id, novoStatus) => {
         const ok = await confirmar(`Mudar status para "${novoStatus}"?`);
         if (!ok) return;
-        fetch(`/api/reports/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: novoStatus })
-        }).then(res => {
-            if (res.ok) carregarDados();
-        });
+        const token = localStorage.getItem('token');
+        axios.put(`/api/reports/${id}`, { status: novoStatus }, {
+            headers: { Authorization: `Bearer ${token}` }
+        }).then(() => carregarDados())
+          .catch(err => console.error("Erro ao atualizar status:", err));
     };
 
     const focarNoMapa = (lat, lng) => {
@@ -170,7 +168,7 @@ function Dashboard() {
             if (acao === 'resolver') { payload.empresa_selecionada = false; payload.status = 'Resolvida'; }
 
             await axios.put(
-                `http://localhost:3000/api/reports/${ocorrenciaSelecionada.id}`,
+                `/api/reports/${ocorrenciaSelecionada.id}`,
                 payload,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -178,7 +176,7 @@ function Dashboard() {
             // Marca as solicitações 'Coletada' como 'Revisada' para não re-abrir o formulário
             if (acao === 'liberar' || acao === 'resolver') {
                 await axios.post(
-                    `http://localhost:3000/api/reports/${ocorrenciaSelecionada.id}/review-collection`,
+                    `/api/reports/${ocorrenciaSelecionada.id}/review-collection`,
                     {},
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
@@ -210,7 +208,7 @@ function Dashboard() {
         focarNoMapa(ocorrencia.lat, ocorrencia.lng);
         const token = localStorage.getItem('token');
         try {
-            const res = await axios.get(`http://localhost:3000/api/reports/${ocorrencia.id}/requests`, {
+            const res = await axios.get(`/api/reports/${ocorrencia.id}/requests`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSolicitacoes(res.data);
@@ -228,10 +226,16 @@ function Dashboard() {
             toast('Defina um prazo antes de aprovar.', { icon: '⚠️' });
             return;
         }
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        if (new Date(prazoInput) < hoje) {
+            toast('O prazo não pode ser uma data passada.', { icon: '⚠️' });
+            return;
+        }
         const token = localStorage.getItem('token');
         try {
             await axios.post(
-                `http://localhost:3000/api/reports/${ocorrenciaSelecionada.id}/requests/${requestId}/approve`,
+                `/api/reports/${ocorrenciaSelecionada.id}/requests/${requestId}/approve`,
                 { prazo: prazoInput },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -252,7 +256,7 @@ function Dashboard() {
         const token = localStorage.getItem('token');
         try {
             await axios.post(
-                `http://localhost:3000/api/reports/${ocorrenciaSelecionada.id}/requests/${requestId}/deny`,
+                `/api/reports/${ocorrenciaSelecionada.id}/requests/${requestId}/deny`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -281,7 +285,7 @@ function Dashboard() {
         const token = localStorage.getItem('token');
         try {
             await axios.post(
-                'http://localhost:3000/api/reports/merge',
+                '/api/reports/merge',
                 { principal_id: principalId, absorvidas_ids: absorvidas },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
