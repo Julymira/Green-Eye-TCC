@@ -39,11 +39,6 @@ function PainelSuperAdmin() {
 
     useEffect(() => { carregarGestores(); }, [carregarGestores]);
 
-    const handleLogout = () => {
-        localStorage.clear();
-        navigate('/');
-    };
-
     const handleCpfChange = (e) => {
         let v = e.target.value.replace(/\D/g, '').slice(0, 11);
         if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
