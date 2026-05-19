@@ -24,6 +24,8 @@ import TutorialSuperAdmin from './pages/superadmin/TutorialSuperAdmin';
 import PontosColeta from './pages/public/PontosColeta';
 import GestaoPontosColeta from './pages/gestor/GestaoPontosColeta';
 import Sobre from './pages/public/Sobre';
+import ForgotPassword from './pages/public/ForgotPassword';
+import ResetPassword from './pages/public/ResetPassword';
 import Rodape from './componentes/Rodape';
 import RodapeSimples from './componentes/RodapeSimples';
 
@@ -74,6 +76,8 @@ function App() {
           <Route path="/cadastro-empresa" element={<RegisterCompany />} />
           <Route path="/login-empresa" element={<LoginCompany />} />
           <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/esqueci-senha" element={<ForgotPassword />} />
+          <Route path="/redefinir-senha" element={<ResetPassword />} />
           <Route path="/pontos-coleta" element={<PontosColeta />} />
           <Route path="/sobre" element={<Sobre />} />
 

@@ -113,7 +113,20 @@ CREATE TABLE IF NOT EXISTS public.pontos_coleta (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 8. ÍNDICES E OTIMIZAÇÃO ESPACIAL
+-- 8. TABELA DE TOKENS DE REDEFINIÇÃO DE SENHA
+CREATE TABLE IF NOT EXISTS public.password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER,
+    user_type VARCHAR(10) NOT NULL CHECK (user_type IN ('user', 'company')),
+    token VARCHAR(64) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_token ON public.password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_user ON public.password_reset_tokens(user_id, user_type);
+
+-- 9. ÍNDICES E OTIMIZAÇÃO ESPACIAL
 CREATE INDEX IF NOT EXISTS idx_reports_localizacao 
 ON public.reports USING GIST (localizacao);
 

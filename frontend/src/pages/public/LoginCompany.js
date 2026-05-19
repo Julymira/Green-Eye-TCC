@@ -108,6 +108,9 @@ function LoginCompany() {
                 </div>
 
                 <div style={{ textAlign: 'center' }}>
+                    <Link to="/esqueci-senha" style={{ ...linkStyle, color: '#2e7d32', display: 'block', marginBottom: '4px' }}>
+                        Esqueci minha senha
+                    </Link>
                     <Link to="/" style={linkStyle}>
                         ← Voltar ao início
                     </Link>

@@ -1,8 +1,10 @@
-const jwt = require('jsonwebtoken');const express = require("express");
+const jwt = require('jsonwebtoken');
+const express = require("express");
 const JWT_SECRET = process.env.JWT_SECRET || 'minha_chave_secreta_tcc_2026';
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const db = require("../config/db");
+const { sendPasswordResetEmail } = require('../services/mailer');
 
 const router = express.Router();
 
@@ -147,6 +149,88 @@ router.post("/generate-temp-password", async (req, res) => {
         res.json({ message: "Senha temporária gerada e atualizada com sucesso.", tempPassword: tempPassword });
     } catch (error) {
         console.error("Erro ao gerar senha temporária:", error);
+        res.status(500).json({ error: "Erro interno do servidor." });
+    }
+});
+
+// POST: Solicitar redefinição de senha (envia e-mail com link)
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: "E-mail é obrigatório." });
+    }
+
+    try {
+        const result = await db.query("SELECT id, email FROM users WHERE email = $1", [email]);
+
+        // Responde sempre com sucesso para não revelar se o e-mail existe
+        if (result.rows.length === 0) {
+            return res.json({ message: "Se o e-mail estiver cadastrado, você receberá as instruções em breve." });
+        }
+
+        const user = result.rows[0];
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+        await db.query(
+            "DELETE FROM password_reset_tokens WHERE user_id = $1 AND user_type = 'user'",
+            [user.id]
+        );
+
+        await db.query(
+            "INSERT INTO password_reset_tokens (user_id, user_type, token, expires_at) VALUES ($1, 'user', $2, $3)",
+            [user.id, token, expiresAt]
+        );
+
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const resetLink = `${frontendUrl}/redefinir-senha?token=${token}&tipo=user`;
+
+        await sendPasswordResetEmail({
+            to: user.email,
+            nome: user.email,
+            resetLink,
+            userType: 'user',
+        });
+
+        res.json({ message: "Se o e-mail estiver cadastrado, você receberá as instruções em breve." });
+    } catch (error) {
+        console.error("Erro ao solicitar redefinição de senha:", error);
+        res.status(500).json({ error: "Erro interno do servidor." });
+    }
+});
+
+// POST: Redefinir senha com token
+router.post('/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+        return res.status(400).json({ error: "Token e nova senha são obrigatórios." });
+    }
+
+    try {
+        const result = await db.query(
+            "SELECT * FROM password_reset_tokens WHERE token = $1 AND user_type = 'user' AND expires_at > NOW()",
+            [token]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({ error: "Token inválido ou expirado." });
+        }
+
+        const { user_id } = result.rows[0];
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await db.query(
+            "UPDATE users SET password = $1, is_temp_password = FALSE WHERE id = $2",
+            [hashedPassword, user_id]
+        );
+
+        await db.query("DELETE FROM password_reset_tokens WHERE token = $1", [token]);
+
+        res.json({ message: "Senha redefinida com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao redefinir senha:", error);
         res.status(500).json({ error: "Erro interno do servidor." });
     }
 });
