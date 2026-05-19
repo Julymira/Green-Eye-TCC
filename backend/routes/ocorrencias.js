@@ -697,16 +697,16 @@ router.get('/estatisticas', verifyToken, async (req, res) => {
                 LIMIT 5
             `),
 
-            // TOP LOCAIS COM MAIS OCORRÊNCIAS (por grid ~200m)
+            // TOP LOCAIS COM MAIS OCORRÊNCIAS (grade ~200m via PostGIS ST_SnapToGrid)
             pool.query(`
                 SELECT
-                    ROUND(lat::numeric, 3) as lat_grid,
-                    ROUND(lng::numeric, 3) as lng_grid,
+                    ST_Y(ST_SnapToGrid(localizacao, 0.002)) as lat_grid,
+                    ST_X(ST_SnapToGrid(localizacao, 0.002)) as lng_grid,
                     COUNT(*) as total,
                     SUM(COALESCE(peso_heatmap, CASE quantidade WHEN 'Pequena' THEN 1 WHEN 'Média' THEN 2 WHEN 'Grande' THEN 3 ELSE 1 END)) as peso_total
                 FROM public.reports
-                WHERE merged_into IS NULL
-                GROUP BY ROUND(lat::numeric, 3), ROUND(lng::numeric, 3)
+                WHERE merged_into IS NULL AND localizacao IS NOT NULL
+                GROUP BY ST_SnapToGrid(localizacao, 0.002)
                 ORDER BY total DESC
                 LIMIT 10
             `)
