@@ -32,23 +32,25 @@ import RodapeSimples from './componentes/RodapeSimples';
 // --- NOVO: Layout para as páginas públicas (Com a Navbar padrão) ---
 function LayoutPublico() {
   return (
-    <>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <nav className="navbar">
         <div className="brand">
           <Link to="/">🌿 Green Eye</Link>
         </div>
         <div className="nav-links">
           <Link to="/ocorrencia">Nova Ocorrência</Link>
-          <Link to="/login-empresa">Empresas</Link> 
+          <Link to="/login-empresa">Empresas</Link>
           <Link to="/login">Gestores</Link>
           <Link to="/pontos-coleta">Pontos de Coleta</Link>
           <Link to="/sobre">Sobre</Link>
         </div>
       </nav>
 
-      <Outlet />
+      <div style={{ flex: 1 }}>
+        <Outlet />
+      </div>
       <Rodape />
-    </>
+    </div>
   );
 }
 
