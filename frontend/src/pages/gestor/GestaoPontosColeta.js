@@ -2,6 +2,61 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import NavbarInterna from '../../componentes/NavbarInterna';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+function MapaPicker({ lat, lng, onChange }) {
+    const centro = (lat && lng) ? [parseFloat(lat), parseFloat(lng)] : [-15.7801, -47.9292];
+
+    function Clicavel() {
+        useMapEvents({
+            click(e) {
+                onChange(e.latlng.lat.toFixed(6), e.latlng.lng.toFixed(6));
+            }
+        });
+        return null;
+    }
+
+    return (
+        <div>
+            <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#555', display: 'block', marginBottom: '6px' }}>
+                📍 Localização no mapa <span style={{ fontWeight: 'normal', color: '#888' }}>(clique para marcar)</span>
+            </label>
+            <MapContainer
+                key={`${lat}-${lng}`}
+                center={centro}
+                zoom={lat && lng ? 15 : 5}
+                style={{ height: '300px', width: '100%', borderRadius: '8px', border: '1px solid #ccc', cursor: 'crosshair' }}
+            >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <Clicavel />
+                {lat && lng && <Marker position={[parseFloat(lat), parseFloat(lng)]} />}
+            </MapContainer>
+            {lat && lng ? (
+                <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#555' }}>
+                    Lat: <strong>{lat}</strong> &nbsp;|&nbsp; Lng: <strong>{lng}</strong>
+                    &nbsp;
+                    <button
+                        onClick={() => onChange('', '')}
+                        style={{ background: 'none', border: 'none', color: '#c62828', cursor: 'pointer', fontSize: '12px', padding: 0 }}
+                    >
+                        ✕ limpar
+                    </button>
+                </p>
+            ) : (
+                <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#aaa' }}>Nenhum ponto selecionado.</p>
+            )}
+        </div>
+    );
+}
 
 const TIPOS_INFO = {
     'Eletrônico':     { cor: '#1565c0', emoji: '💻' },
@@ -235,7 +290,7 @@ export default function GestaoPontosColeta() {
                 }}>
                     <div style={{
                         background: 'white', borderRadius: '12px', padding: '28px',
-                        width: '100%', maxWidth: '580px', maxHeight: '90vh', overflowY: 'auto'
+                        width: '100%', maxWidth: '700px', maxHeight: '90vh', overflowY: 'auto'
                     }}>
                         <h2 style={{ margin: '0 0 20px', color: '#1b5e20' }}>
                             {editando ? '✏️ Editar Ponto' : '➕ Novo Ponto de Coleta'}
@@ -247,10 +302,11 @@ export default function GestaoPontosColeta() {
                             <Campo label="Cidade *" value={form.cidade} onChange={v => setForm(f => ({ ...f, cidade: v }))} />
                             <Campo label="Telefone" value={form.telefone} onChange={v => setForm(f => ({ ...f, telefone: v }))} />
                             <Campo label="Horário de funcionamento" value={form.horario} onChange={v => setForm(f => ({ ...f, horario: v }))} placeholder="Ex: Seg a Sex, 8h às 17h" />
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <Campo label="Latitude" value={form.lat} onChange={v => setForm(f => ({ ...f, lat: v }))} placeholder="-16.2531" />
-                                <Campo label="Longitude" value={form.lng} onChange={v => setForm(f => ({ ...f, lng: v }))} placeholder="-47.9503" />
-                            </div>
+                            <MapaPicker
+                                lat={form.lat}
+                                lng={form.lng}
+                                onChange={(lat, lng) => setForm(f => ({ ...f, lat, lng }))}
+                            />
 
                             <div>
                                 <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#555', display: 'block', marginBottom: '8px' }}>
@@ -316,10 +372,6 @@ function Campo({ label, value, onChange, placeholder }) {
     );
 }
 
-const btnNav = {
-    background: 'transparent', color: 'white', border: '1px solid rgba(255,255,255,0.4)',
-    padding: '7px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px'
-};
 
 function btnAcao(cor) {
     return {
