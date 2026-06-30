@@ -66,7 +66,10 @@ CREATE TABLE IF NOT EXISTS public.reports (
 
     -- Unificação de ocorrências repetidas
     merged_into  INTEGER REFERENCES public.reports(id),
-    peso_heatmap INTEGER DEFAULT NULL
+    peso_heatmap INTEGER DEFAULT NULL,
+
+    -- Auditoria: gestor que resolveu a ocorrência
+    resolved_by  INTEGER REFERENCES public.users(id) ON DELETE SET NULL
 );
 
 -- 6. TABELAS INTERMEDIÁRIAS (N:N - Muitos para Muitos)
@@ -79,7 +82,11 @@ CREATE TABLE IF NOT EXISTS public.collection_requests (
     status       VARCHAR(20) DEFAULT 'Pendente', -- 'Pendente', 'Aprovada', 'Negada', 'Coletada'
     prazo        TIMESTAMP,
     coletado_em  TIMESTAMP,
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    -- Auditoria: gestor responsável pela aprovação/negação
+    approved_by  INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
+    denied_by    INTEGER REFERENCES public.users(id) ON DELETE SET NULL
 );
 
 -- Normalização: Permite múltiplas categorias para uma denúncia e para uma empresa
