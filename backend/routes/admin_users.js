@@ -368,6 +368,7 @@ router.delete('/gestores/:id', verifyToken, requireSuperAdmin, async (req, res) 
             return res.status(403).json({ error: "Não é permitido remover outro Super Admin." });
         }
 
+        await db.query("DELETE FROM password_reset_tokens WHERE user_id = $1 AND user_type = 'user'", [id]);
         await db.query("DELETE FROM public.users WHERE id = $1", [id]);
         res.json({ message: "Gestor removido com sucesso." });
     } catch (error) {

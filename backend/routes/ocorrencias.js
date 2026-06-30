@@ -812,6 +812,16 @@ router.post('/merge', verifyToken, async (req, res) => {
     try {
         await client.query('BEGIN');
 
+        // Verifica que a principal não está ela mesma já unificada em outra
+        const { rows: principal } = await client.query(
+            `SELECT id FROM public.reports WHERE id = $1 AND merged_into IS NULL`,
+            [principal_id]
+        );
+        if (principal.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'A ocorrência principal não foi encontrada ou já está unificada em outra.' });
+        }
+
         // Busca pesos individuais de todas (principal + absorvidas)
         const todosIds = [principal_id, ...absorvidas_ids];
         const { rows: todasOcorrencias } = await client.query(
