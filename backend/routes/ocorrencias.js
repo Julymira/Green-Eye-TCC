@@ -201,6 +201,11 @@ router.put('/:id', verifyToken, async (req, res) => {
             }
             fields.push(`status = $${fields.length + 1}`);
             values.push(status);
+
+            if (status === 'Resolvida') {
+                fields.push(`resolved_by = $${fields.length + 1}`);
+                values.push(req.user.id);
+            }
         }
 
         if (empresa_selecionada !== undefined) {
@@ -293,8 +298,8 @@ router.post('/:id/requests/:requestId/approve', verifyToken, async (req, res) =>
         }
 
         await client.query(
-            `UPDATE public.collection_requests SET status = 'Aprovada', prazo = $1 WHERE id = $2`,
-            [prazo, requestId]
+            `UPDATE public.collection_requests SET status = 'Aprovada', prazo = $1, approved_by = $2 WHERE id = $3`,
+            [prazo, req.user.id, requestId]
         );
 
         // Nega automaticamente todas as outras solicitações pendentes da mesma ocorrência
@@ -332,8 +337,8 @@ router.post('/:id/requests/:requestId/deny', verifyToken, async (req, res) => {
         await client.query('BEGIN');
 
         await client.query(
-            `UPDATE public.collection_requests SET status = 'Negada' WHERE id = $1`,
-            [requestId]
+            `UPDATE public.collection_requests SET status = 'Negada', denied_by = $1 WHERE id = $2`,
+            [req.user.id, requestId]
         );
 
         // Se não houver mais nenhuma solicitação aprovada, libera a ocorrência
@@ -760,6 +765,7 @@ router.get('/historico', verifyToken, async (req, res) => {
                 r.id, r.lat, r.lng, r.quantidade, r.status, r.created_at, r.updated_at,
                 r.descricao_adicional, r.problemas_causados,
                 (r.photo_content IS NOT NULL) as has_photo,
+                u.email as resolvido_por,
                 COALESCE(STRING_AGG(DISTINCT c.nome, ', ' ORDER BY c.nome), 'Sem categoria') as tipo_lixo,
                 (
                     SELECT JSON_AGG(
@@ -771,18 +777,23 @@ router.get('/historico', verifyToken, async (req, res) => {
                             'created_at', cr.created_at,
                             'empresa', co.nome_fantasia,
                             'empresa_email', co.email_contato,
-                            'empresa_telefone', co.telefone
+                            'empresa_telefone', co.telefone,
+                            'aprovado_por', ua.email,
+                            'negado_por', ud.email
                         ) ORDER BY cr.created_at DESC
                     )
                     FROM public.collection_requests cr
                     JOIN public.companies co ON cr.company_id = co.id
+                    LEFT JOIN public.users ua ON cr.approved_by = ua.id
+                    LEFT JOIN public.users ud ON cr.denied_by = ud.id
                     WHERE cr.report_id = r.id
                 ) as coletas
             FROM public.reports r
             LEFT JOIN report_categories rc ON r.id = rc.report_id
             LEFT JOIN categories c ON rc.category_id = c.id
+            LEFT JOIN public.users u ON r.resolved_by = u.id
             WHERE r.status = 'Resolvida'
-            GROUP BY r.id
+            GROUP BY r.id, u.email
             ORDER BY r.updated_at DESC
         `);
         res.json(result.rows);
