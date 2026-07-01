@@ -52,7 +52,7 @@ export default function NavbarInterna({ tipo = 'gestor', paginaAtual }) {
         }}>
             {/* MARCA */}
             <span style={{ color: 'white', fontWeight: 'bold', fontSize: '17px', marginRight: '8px' }}>
-                🌿 Green Eye
+                🌿 GreenEye
             </span>
 
             {/* ITENS DE NAVEGAÇÃO */}

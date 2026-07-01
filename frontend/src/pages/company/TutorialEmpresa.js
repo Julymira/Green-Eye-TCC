@@ -88,7 +88,7 @@ export default function TutorialEmpresa() {
             <div style={{ padding: '30px', maxWidth: '900px', margin: '0 auto' }}>
                 <h1 style={{ color: '#2e7d32', marginBottom: '8px' }}>📖 Tutorial da Empresa / ONG</h1>
                 <p style={{ color: '#666', marginBottom: '32px', fontSize: '15px' }}>
-                    Veja como utilizar o sistema Green Eye para solicitar e confirmar coletas de resíduos de forma eficiente.
+                    Veja como utilizar o sistema GreenEye para solicitar e confirmar coletas de resíduos de forma eficiente.
                 </p>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -151,7 +151,7 @@ export default function TutorialEmpresa() {
                     color: '#2e7d32',
                     fontSize: '14px',
                 }}>
-                    <strong>💡 Dica:</strong> Em caso de dúvidas ou problemas técnicos, entre em contato com a equipe de suporte do Green Eye.
+                    <strong>💡 Dica:</strong> Em caso de dúvidas ou problemas técnicos, entre em contato com a equipe de suporte do GreenEye.
                 </div>
             </div>
         </div>

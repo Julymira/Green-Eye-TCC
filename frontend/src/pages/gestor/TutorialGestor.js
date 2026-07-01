@@ -94,7 +94,7 @@ export default function TutorialGestor() {
             <div style={{ padding: '30px', maxWidth: '900px', margin: '0 auto' }}>
                 <h1 style={{ color: '#2e7d32', marginBottom: '8px' }}>📖 Tutorial do Gestor</h1>
                 <p style={{ color: '#666', marginBottom: '32px', fontSize: '15px' }}>
-                    Siga os passos abaixo para entender como gerenciar as ocorrências e o fluxo de atendimento do sistema Green Eye.
+                    Siga os passos abaixo para entender como gerenciar as ocorrências e o fluxo de atendimento do sistema GreenEye.
                 </p>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -157,7 +157,7 @@ export default function TutorialGestor() {
                     color: '#2e7d32',
                     fontSize: '14px',
                 }}>
-                    <strong>💡 Dica:</strong> Em caso de dúvidas ou problemas técnicos, entre em contato com a equipe de suporte do Green Eye.
+                    <strong>💡 Dica:</strong> Em caso de dúvidas ou problemas técnicos, entre em contato com a equipe de suporte do GreenEye.
                 </div>
             </div>
         </div>

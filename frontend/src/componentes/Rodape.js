@@ -57,7 +57,7 @@ export default function Rodape() {
                     {/* MARCA */}
                     <div>
                         <div style={{ fontWeight: 'bold', fontSize: '18px', color: 'white', marginBottom: '4px' }}>
-                            🌿 Green Eye
+                            🌿 GreenEye
                         </div>
                         <div style={{ fontSize: '12px', opacity: 0.7, maxWidth: '260px', lineHeight: '1.6' }}>
                             Sistema de Monitoramento Ambiental Urbano — Luziânia/GO

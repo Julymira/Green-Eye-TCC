@@ -99,7 +99,7 @@ export default function Sobre() {
                 boxShadow: '0 4px 20px rgba(46,125,50,0.3)'
             }}>
                 <div style={{ fontSize: '56px', marginBottom: '12px' }}>🌿</div>
-                <h1 style={{ margin: '0 0 8px', fontSize: '32px', letterSpacing: '1px' }}>Green Eye</h1>
+                <h1 style={{ margin: '0 0 8px', fontSize: '32px', letterSpacing: '1px' }}>GreenEye</h1>
                 <p style={{ margin: 0, fontSize: '16px', opacity: 0.9, maxWidth: '520px', marginInline: 'auto' }}>
                     Sistema de Monitoramento Ambiental para gestão de descarte irregular de resíduos urbanos em Luziânia/GO
                 </p>
@@ -119,7 +119,7 @@ export default function Sobre() {
                     <div style={{ flex: 1, minWidth: '220px' }}>
                         <h3 style={{ margin: '0 0 6px', fontSize: '22px', color: '#1b5e20' }}>Julyana Mira Medeiros</h3>
                         <p style={{ margin: '0 0 16px', color: '#666', fontSize: '14px', lineHeight: '1.7' }}>
-                            Desenvolvedora do sistema Green Eye como Trabalho de Conclusão de Curso (TCC).
+                            Desenvolvedora do sistema GreenEye como Trabalho de Conclusão de Curso (TCC).
                             O projeto nasceu da necessidade real de Luziânia/GO em monitorar e gerenciar
                             ocorrências de descarte irregular de resíduos, contando com apoio da prefeitura municipal.
                         </p>
@@ -144,7 +144,7 @@ export default function Sobre() {
                 </h2>
                 <div style={{ display: 'grid', gap: '16px', fontSize: '14px', color: '#444', lineHeight: '1.8' }}>
                     <p style={{ margin: 0 }}>
-                        O <strong>Green Eye</strong> é um sistema web completo desenvolvido para facilitar o registro,
+                        O <strong>GreenEye</strong> é um sistema web completo desenvolvido para facilitar o registro,
                         monitoramento e resolução de ocorrências de descarte irregular de resíduos urbanos.
                         A plataforma conecta <strong>cidadãos</strong>, <strong>gestores municipais</strong> e
                         <strong> empresas coletoras</strong> em um único ambiente digital.
@@ -198,7 +198,7 @@ export default function Sobre() {
             {/* RODAPÉ DA PÁGINA */}
             <div style={{ textAlign: 'center', color: '#aaa', fontSize: '13px', paddingTop: '8px' }}>
                 © 2026 Julyana Mira Medeiros — Todos os direitos reservados à autora.<br />
-                Green Eye foi desenvolvido como Trabalho de Conclusão de Curso (TCC).
+                GreenEye foi desenvolvido como Trabalho de Conclusão de Curso (TCC).
             </div>
         </div>
     );

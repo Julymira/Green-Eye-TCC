@@ -40,7 +40,7 @@ function addCabecalho(doc, gestorEmail, gestorRole) {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('Green Eye — Relatorio Estatistico', 14, 12);
+    doc.text('GreenEye — Relatorio Estatistico', 14, 12);
 
     // Data e gestor na barra
     doc.setFontSize(8);
@@ -64,7 +64,7 @@ function addRodape(doc) {
         doc.line(14, h - 12, w - 14, h - 12);
         doc.setFontSize(8);
         doc.setTextColor(...CINZA);
-        doc.text('Desenvolvido por Julyana Mira Medeiros  |  Sistema Green Eye - Uso interno e confidencial', 14, h - 6);
+        doc.text('Desenvolvido por Julyana Mira Medeiros  |  Sistema GreenEye - Uso interno e confidencial', 14, h - 6);
         doc.text(`Pagina ${i} de ${total}`, w - 14, h - 6, { align: 'right' });
     }
 }
@@ -97,7 +97,7 @@ function addCapa(doc, gestorEmail, gestorRole) {
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(28);
-    doc.text('GREEN EYE', w / 2, 38, { align: 'center' });
+    doc.text('GREENEYE', w / 2, 38, { align: 'center' });
     doc.setFontSize(13);
     doc.setFont('helvetica', 'normal');
     doc.text('Sistema de Monitoramento Ambiental - Luziania/GO', w / 2, 50, { align: 'center' });
@@ -119,7 +119,7 @@ function addCapa(doc, gestorEmail, gestorRole) {
         ['Gestor responsavel', safe(gestorEmail)],
         ['Nivel de acesso',    gestorRole === 'superadmin' ? 'Super Administrador' : 'Gestor'],
         ['Desenvolvedora',     'Julyana Mira Medeiros'],
-        ['Sistema',            'Green Eye v1.0 - TCC 2026'],
+        ['Sistema',            'GreenEye v1.0 - TCC 2026'],
         ['Confidencialidade',  'Uso interno - nao divulgar sem autorizacao'],
     ];
 
@@ -139,7 +139,7 @@ function addCapa(doc, gestorEmail, gestorRole) {
     doc.setFontSize(9);
     doc.setTextColor(...CINZA);
     doc.text(
-        'Este documento foi gerado automaticamente pelo Sistema Green Eye e contem dados\nestatisticos de ocorrencias ambientais, coletas e pontos de descarte registrados.',
+        'Este documento foi gerado automaticamente pelo Sistema GreenEye e contem dados\nestatisticos de ocorrencias ambientais, coletas e pontos de descarte registrados.',
         w / 2, h - 30, { align: 'center', maxWidth: w - 60 }
     );
 }

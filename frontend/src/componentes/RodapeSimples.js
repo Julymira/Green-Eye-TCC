@@ -14,7 +14,7 @@ export default function RodapeSimples() {
             marginTop: 'auto',
         }}>
             <span style={{ fontSize: '12px', color: '#aaa' }}>
-                🌿 <strong style={{ color: '#2e7d32' }}>Green Eye</strong> — Sistema de Monitoramento Ambiental
+                🌿 <strong style={{ color: '#2e7d32' }}>GreenEye</strong> — Sistema de Monitoramento Ambiental
             </span>
             <span style={{ fontSize: '12px', color: '#ccc' }}>
                 © 2026 Julyana Mira Medeiros

@@ -35,7 +35,7 @@ function LayoutPublico() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <nav className="navbar">
         <div className="brand">
-          <Link to="/">🌿 Green Eye</Link>
+          <Link to="/">🌿 GreenEye</Link>
         </div>
         <div className="nav-links">
           <Link to="/ocorrencia">Nova Ocorrência</Link>
@@ -70,7 +70,7 @@ function App() {
       <div className="App">
         <Routes>
           
-          {/* GRUPO 1: Páginas Públicas (Usam o Layout com Navbar "Green Eye") */}
+          {/* GRUPO 1: Páginas Públicas (Usam o Layout com Navbar "GreenEye") */}
           <Route element={<LayoutPublico />}>
           <Route path="/" element={<Home />} />
           <Route path="/ocorrencia" element={<NovaOcorrencia />} />

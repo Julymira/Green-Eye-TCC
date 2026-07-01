@@ -71,7 +71,7 @@ export default function TutorialSuperAdmin() {
             <div style={{ padding: '30px', maxWidth: '900px', margin: '0 auto' }}>
                 <h1 style={{ color: '#2e7d32', marginBottom: '8px' }}>📖 Tutorial do Super Admin</h1>
                 <p style={{ color: '#666', marginBottom: '32px', fontSize: '15px' }}>
-                    Entenda como gerenciar os usuários do sistema Green Eye com segurança e controle.
+                    Entenda como gerenciar os usuários do sistema GreenEye com segurança e controle.
                 </p>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

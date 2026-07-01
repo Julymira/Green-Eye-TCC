@@ -66,7 +66,7 @@ function LoginCompany() {
         <div className="form-container">
             <div className="form-card" style={{ maxWidth: '400px' }}>
                 
-                {/* CABEÇALHO INTEGRADO AO ESTILO GREEN EYE */}
+                {/* CABEÇALHO INTEGRADO AO ESTILO GREENEYE */}
                 <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                     <div style={{ color: '#555', fontSize: '13px', textTransform: 'uppercase', marginBottom: '5px', fontWeight: 'bold' }}>
                         💼 Portal do Parceiro

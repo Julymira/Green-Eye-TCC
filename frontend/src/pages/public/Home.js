@@ -8,9 +8,9 @@ function Home() {
     <div>
       {/* 1. Seção de Boas-vindas */}
       <section className="welcome-section">
-        <h2>Bem-vindo ao Green Eye 🌱</h2>
+        <h2>Bem-vindo ao GreenEye 🌱</h2>
         <p>
-          O <strong>Green Eye</strong> é um sistema de monitoramento ambiental criado para identificar 
+          O <strong>GreenEye</strong> é um sistema de monitoramento ambiental criado para identificar 
           e combater o descarte irregular de lixo em Luziânia-GO. Nossa missão é ajudar a manter a cidade
            limpa, saudável e sustentável. Por meio de geolocalização e ocorrências comunitárias,
            queremos mapear os pontos críticos e auxiliar o poder público na solução desse problema.
