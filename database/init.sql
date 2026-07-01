@@ -159,8 +159,3 @@ INSERT INTO public.categories (nome) VALUES
 ('Eletrônico'), ('Orgânico'), ('Entulho'), ('Pneus'), 
 ('Móveis'), ('Lixo Doméstico'), ('Hospitalar'), ('Outros')
 ON CONFLICT (nome) DO NOTHING;
-
--- Super Admin padrão (único usuário seed — cria gestores pelo painel)
-INSERT INTO public.users (cpf, email, password, is_temp_password, role)
-VALUES ('00000000000', 'admin@greeneye.com', '$2b$10$CznwWKZSW/9SForJJMAu4e8GihPjFEWDG3vCTOQXTrqSWXVXMMBu', false, 'superadmin')
-ON CONFLICT (cpf) DO NOTHING;
