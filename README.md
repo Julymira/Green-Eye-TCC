@@ -91,15 +91,34 @@ MAIL_PASS=sua_senha_smtp
 
 > Em ambiente de desenvolvimento (`NODE_ENV=development`), o envio de e-mails usa o **Ethereal** automaticamente — nenhuma configuração SMTP é necessária. O link de preview aparece no console do backend.
 
-### 4. Instale as dependências e rode o Backend
+### 4. Instale as dependências do Backend
 
 ```bash
 cd backend
 npm install
+```
+
+### 5. Crie o primeiro usuário Super Admin
+
+O `database/init.sql` não insere nenhum usuário — o primeiro acesso é criado via script, com CPF e senha temporária gerados automaticamente.
+
+Edite o CPF desejado em `backend/scripts/create_superadmin_script.js` (linha `const cpf = "..."`) e rode:
+
+```bash
+node scripts/create_superadmin_script.js
+```
+
+O script exibirá no terminal o CPF e a senha temporária gerados — use-os para o primeiro login (a senha deverá ser trocada, pois é marcada como temporária).
+
+> Também existe `backend/scripts/create_admin_script.js`, que cria um usuário com o papel padrão de **gestor** (não superadmin), útil para testes.
+
+### 6. Rode o Backend
+
+```bash
 npm run dev
 ```
 
-### 5. Instale as dependências e rode o Frontend
+### 7. Instale as dependências e rode o Frontend
 
 ```bash
 cd frontend
