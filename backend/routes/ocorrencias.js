@@ -152,6 +152,21 @@ router.get('/', async (req, res) => {
 });
 
 /*
+ * 2b. ROTA: contagem de ocorrências resolvidas 
+ */
+router.get('/resolvidas/count', verifyToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT COUNT(*) as total FROM public.reports WHERE status = 'Resolvida' AND merged_into IS NULL`
+        );
+        res.json({ resolvidas: parseInt(result.rows[0].total, 10) });
+    } catch (err) {
+        console.error('Erro na rota GET /reports/resolvidas/count:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/*
  * 3. ROTA DE IMAGEM (GET)
  * Serve os bytes da foto armazenada no banco
  */

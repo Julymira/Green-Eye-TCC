@@ -99,25 +99,27 @@ function Dashboard() {
         });
     };
 
-    const calcularEstatisticas = (dados) => {
-        const s = { total: dados.length, novas: 0, verificacao: 0, resolvidas: 0 };
+    const calcularEstatisticas = (dados, resolvidas) => {
+        const s = { total: dados.length, novas: 0, verificacao: 0, resolvidas };
         dados.forEach(d => {
             if (d.status === 'Nova') s.novas++;
             else if (d.status === 'Em verificação') s.verificacao++;
-            else if (d.status === 'Resolvida') s.resolvidas++;
         });
         setStats(s);
     };
 
     const carregarDados = useCallback(async () => {
         const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
         try {
-            const res = await axios.get('/api/reports', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const [res, resResolvidas] = await Promise.all([
+                axios.get('/api/reports', { headers }),
+                axios.get('/api/reports/resolvidas/count', { headers })
+            ]);
+            const resolvidas = resResolvidas.data?.resolvidas || 0;
             if (Array.isArray(res.data)) {
                 setOcorrencias(res.data);
-                calcularEstatisticas(res.data);
+                calcularEstatisticas(res.data, resolvidas);
             } else {
                 setOcorrencias([]);
             }
@@ -316,15 +318,6 @@ function Dashboard() {
 
         carregarDados();
     }, [navigate, carregarDados]);
-
-    const handleLogout = () => {
-    // Limpa o Local Storage
-    localStorage.clear(); 
-    toast('Você saiu do sistema.');
-    navigate('/'); // Volta para a Home
-    };
-
-    
 
     // Estilos
     const tableStyle = { width: '100%', borderCollapse: 'collapse', marginTop: '10px' };
