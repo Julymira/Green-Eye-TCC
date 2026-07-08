@@ -192,8 +192,27 @@ export default function GestaoPontosColeta() {
         }
     }
 
+    const confirmar = (mensagem) => new Promise((resolve) => {
+        toast((t) => (
+            <div>
+                <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>{mensagem}</p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => { toast.dismiss(t.id); resolve(true); }}
+                        style={{ background: '#2e7d32', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
+                        Confirmar
+                    </button>
+                    <button onClick={() => { toast.dismiss(t.id); resolve(false); }}
+                        style={{ background: '#757575', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        ), { duration: Infinity });
+    });
+
     async function remover(id) {
-        if (!window.confirm('Remover este ponto de coleta?')) return;
+        const ok = await confirmar('Remover este ponto de coleta?');
+        if (!ok) return;
         try {
             const res = await fetch(`/api/pontos-coleta/${id}`, {
                 method: 'DELETE',
